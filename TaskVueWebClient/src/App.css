@@ -1,8 +1,28 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+
+}
+
+html {
+    min-height: 100vh;
+}
+
+body {
+    min-height: 100vh;
+
+    position: relative;
+
+}
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100vw;
+  min-height: 100vh;
   text-align: center;
+  display: flex;
+  flex-direction: row;
+  background: #eff2f5;
 }
 
 .logo {
@@ -40,3 +60,73 @@
 .read-the-docs {
   color: #888;
 }
+
+.ant-menu-item{
+    padding-left: 0; !important;
+}
+
+.custom-timeline-item-head {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  background-color: var(--timeline-item-color, #1890ff);
+}
+
+
+.custom-timeline-item-head:hover {
+  border: 2px solid var(--timeline-item-hover-border-color, #40a9ff);
+}
+
+.custom-events{
+  padding: 0 14px;
+}
+
+.event-item span:nth-of-type(2) {
+  padding-left: 15px;
+}
+
+.custom-events .event-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  position: relative;
+  padding-left: 20px; /* Platz für den Punkt */
+}
+
+.custom-events .event-item .event-dot {
+  width: 16px; /* Größe des Punktes */
+  height: 16px; /* Größe des Punktes */
+  border-radius: 2px; /* Kreisförmig machen */
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.custom-events .event-time {
+  margin-left: auto;
+}
+
+
+.content-wrapper div:nth-of-type(1){
+  max-width: 300px;
+}
+
+
+.history-wrapper > div,
+.history-wrapper > div > div {
+    min-width: 100%;
+}
+
+
+.custom-menu.dark-theme .ant-menu-item:not(.ant-menu-item-selected):hover {
+    color: #ffffff !important;
+}
+
+.custom-menu.light-theme .ant-menu-item:not(.ant-menu-item-selected):hover {
+    color: #000000 !important;
+}
+
+
+
+

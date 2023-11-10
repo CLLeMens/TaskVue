@@ -1,36 +1,38 @@
 import React, {useState, useEffect} from 'react';
-import {Layout, Menu, DatePicker, Button, List, Badge} from 'antd';
+import {Layout, Menu, DatePicker, ConfigProvider} from 'antd';
 import {
     HistoryOutlined,
-    SettingOutlined,
-    SyncOutlined,
     RiseOutlined,
 } from '@ant-design/icons';
-import dayjs from 'dayjs';
 import 'dayjs/locale/de';
-import Goals from "./Goals.jsx";
-import Settings from "./Settings.jsx";
 import History from "./History.jsx";
-import Productivity from "./Productivity.jsx"; // Importieren Sie die deutsche Lokalisierung
+import Productivity from "./Productivity.jsx";
 
-dayjs.locale('de'); // Verwenden Sie die deutsche Lokalisierung
+import locale from "antd/es/locale/en_GB";
+import dayjs from 'dayjs';
+import updateLocale from 'dayjs/plugin/updateLocale';
+
+
+dayjs.extend(updateLocale)
+dayjs.updateLocale('en', {
+    weekStart: 1
+})
 
 const {Header, Content} = Layout;
-const {RangePicker} = DatePicker;
+
 
 const Dashboard = () => {
     const [theme, setTheme] = useState('light');
 
-    // Definiere das Start- und Enddatum der aktuellen Woche direkt in useState
-    const startOfWeek = dayjs().startOf('week').add(1, 'day'); // Montag
-    const endOfWeek = dayjs().endOf('week').add(1, 'day'); // Sonntag
-    const [defaultDates, setDefaultDates] = useState([startOfWeek, endOfWeek]);
+    const currentWeek = dayjs().week();
+    const [defaultDates, setDefaultDates] = useState(currentWeek);
 
 
     const [selectedHeaderItem, setSelectedHeaderItem] = useState(() => {
         const storedValue = sessionStorage.getItem('selectedHeaderItem')
         return storedValue ? storedValue : 'history';
     });
+
 
     useEffect(() => {
 
@@ -54,10 +56,11 @@ const Dashboard = () => {
         {key: 'productivity', icon: <RiseOutlined/>, label: 'Productivity'},
     ];
 
+
     let content;
     switch (selectedHeaderItem) {
         case 'history':
-            content = <History/>;
+            content = <History week={defaultDates}/>;
             break;
         case 'productivity':
             content = <Productivity/>;
@@ -66,10 +69,11 @@ const Dashboard = () => {
             content = <History/>;
     }
 
+
     return (
         <Layout className="layout" style={{backgroundColor: theme === 'dark' ? '#242424' : '#ffffff',}}>
             <Header
-                style={{backgroundColor: theme === 'dark' ? '#242424' : '#ffffff', marginTop: '35px', padding: '0'}}>
+                style={{backgroundColor: theme === 'dark' ? '#242424' : '#ffffff', marginTop: '15px', padding: '0'}}>
                 <div style={{
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -92,11 +96,16 @@ const Dashboard = () => {
 
 
                     <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
-                        <RangePicker
-                            style={{marginRight: '8px'}}
-                            format="DD MMM YY"
-                            defaultValue={defaultDates} // Verwende die Standarddaten aus dem useState-Hook
-                        />
+                        <ConfigProvider locale={locale}>
+                            <DatePicker
+                                placeholder="Select week"
+                                onChange={e => setDefaultDates(dayjs(e).week())}
+                                picker="week"
+
+                                style={{marginRight: '25px'}}
+                                defaultValue={dayjs().week(currentWeek)}
+                            />
+                        </ConfigProvider>
                     </div>
                 </div>
             </Header>

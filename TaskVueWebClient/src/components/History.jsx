@@ -1,23 +1,32 @@
-import {Badge, List, Tag} from "antd";
+import {Badge, List, Tag, Typography} from "antd";
 import React, {useEffect, useState} from "react";
 import dayjs from "dayjs";
-import Dashboard from "./Dashboard.jsx";
-import Goals from "./Goals.jsx";
-import Settings from "./Settings.jsx";
+import weekOfYear from 'dayjs/plugin/weekOfYear';
+import {Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title as TitleJS, Tooltip, Legend} from 'chart.js';
+import {Bar} from 'react-chartjs-2';
+
+const {Title} = Typography;
+
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    TitleJS,
+    Tooltip,
+    Legend
+);
 
 
-const History = () => {
+const History = ({week}) => {
     const [theme, setTheme] = useState('light');
+    const [defaultDates, setDefaultDates] = useState(week);
 
-    // Definiere das Start- und Enddatum der aktuellen Woche direkt in useState
-    const startOfWeek = dayjs().startOf('week').add(1, 'day'); // Montag
-    const endOfWeek = dayjs().endOf('week').add(1, 'day'); // Sonntag
-    const [defaultDates, setDefaultDates] = useState([startOfWeek, endOfWeek]);
+    useEffect(() => {
+        setDefaultDates(week);
+    }, [week]);
 
 
     useEffect(() => {
-
-
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
         const handleChange = (e) => {
@@ -30,6 +39,7 @@ const History = () => {
 
         return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
+
 
     // Statische Daten für die Wochentage und deren Status
     const weekData = [
@@ -63,6 +73,67 @@ const History = () => {
         color: theme === 'dark' ? '#ffffff' : 'black',
     });
 
+// Diese Funktion generiert die Labels für die gegebene Woche
+    const generateLabelsForWeek = (week) => {
+        // Finde den ersten Tag der gegebenen Woche und das entsprechende Jahr
+        const year = dayjs().week(week).year();
+        let firstDayOfWeek = dayjs().year(year).week(week).startOf('week');
+
+        // Erstelle ein Array für die Labels
+        const labels = [];
+
+        // Füge jeden Tag der Woche zum Array hinzu
+        for (let i = 0; i < 7; i++) {
+            labels.push(firstDayOfWeek.add(i, 'day').format('DD.MM'));
+        }
+
+        return labels;
+    };
+
+    // Konfiguration für das Balkendiagramm
+    const barChartOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: false,
+                position: 'bottom'
+            },
+            title: {
+                display: false,
+                text: 'Aktivitätsgraph'
+            },
+        },
+    };
+
+   // Setze die Labels für das Diagramm
+const labels = generateLabelsForWeek(week);
+
+    const dataBarChart = {
+        labels,
+        datasets: [
+            {
+                label: 'Activity',
+                data: [3, 2, 1, 4, 6, 2], // Die Datenpunkte für das Balkendiagramm
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+            },
+            // Weitere Datasets können hier hinzugefügt werden
+        ],
+    };
+
+    const generateWeekLabels = () => {
+        const startOfWeek = dayjs().startOf('week');
+        const labels = [];
+
+        for (let i = 1; i <= 6; i++) { // Passen Sie die Schleife an, wenn Sie mehr oder weniger Tage möchten
+            labels.push(startOfWeek.add(i, 'day').format('DD.MM.'));
+        }
+
+        return labels;
+    };
+
 
     return (
         <div className="site-layout-content" style={{margin: '16px 0', minWidth: '100%'}}>
@@ -94,10 +165,17 @@ const History = () => {
                             left: '80%',
                             fontWeight: '800'
                         }}>{item.status}</Tag>
-                        <div style={{marginLeft: 'auto', ...getTextStyle()}}>{item.percentage}{item.status === 'Break' ? '': '%'}</div>
+                        <div
+                            style={{marginLeft: 'auto', ...getTextStyle()}}>{item.percentage}{item.status === 'Break' ? '' : '%'}</div>
                     </List.Item>
                 )}
             />
+            <Title level={5} style={{...getTextStyle(), textAlign: 'left', margin: '25px 24px 10px 24px'}}>Activity
+                Chart</Title>
+            <div className={'chart-wrapper'}>
+                <Bar options={barChartOptions} data={dataBarChart}/>
+            </div>
+
 
         </div>
 

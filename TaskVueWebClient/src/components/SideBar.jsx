@@ -50,6 +50,7 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         {time: '14:00 - 14:10', title: 'Another Person', color: 'yellow'},
         {time: '14:10 - 15:30', title: 'Work', color: 'green'},
         {time: '15:30 - 16:00', title: 'Smartphone', color: 'pink'},
+
     ];
 
 

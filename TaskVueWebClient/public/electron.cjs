@@ -14,9 +14,10 @@ let win = null;
 function createWindow() {
     // Create a new BrowserWindow instance
     win = new BrowserWindow({
-        width: 1200,
-        height: 800,
+        width: 1300,
+        height: 860,
         title: 'TaskVue',
+        resizable: false,
         webPreferences: {
             nodeIntegration: true, // Allows integration with Node.js
             contextIsolation: false, // Disables context isolation for preload scripts

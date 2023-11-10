@@ -79,6 +79,8 @@ body {
 
 .custom-events{
   padding: 0 14px;
+  overflow-Y: auto;
+  max-height: 350px;
 }
 
 .event-item span:nth-of-type(2) {
@@ -127,6 +129,9 @@ body {
     color: #000000 !important;
 }
 
-
+.chart-wrapper{
+  max-height: 180px;
+  margin-left: 24px;
+}
 
 

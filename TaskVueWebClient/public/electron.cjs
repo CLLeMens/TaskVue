@@ -4,7 +4,7 @@ const {app, BrowserWindow, Tray, Menu, nativeImage, screen} = require('electron'
 const path = require('path');
 
 // Define the path to the application's icon
-const iconPath = path.join(__dirname, '..', 'public', 'logo2.png');
+const iconPath = path.join(__dirname, '..', 'public', 'logo.png');
 
 // Initialize variables for tray and window to null to define them globally
 let tray = null;
@@ -14,7 +14,7 @@ let win = null;
 function createWindow() {
     // Create a new BrowserWindow instance
     win = new BrowserWindow({
-        width: 1300,
+        width: 1280,
         height: 860,
         title: 'TaskVue',
         resizable: false,

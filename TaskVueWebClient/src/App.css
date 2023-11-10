@@ -134,4 +134,6 @@ body {
   margin-left: 24px;
 }
 
-
+.chart-wrapper > canvas{
+  min-width: 500px;
+}

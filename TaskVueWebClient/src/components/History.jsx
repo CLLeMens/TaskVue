@@ -93,11 +93,12 @@ const History = ({week}) => {
     // Konfiguration für das Balkendiagramm
     const barChartOptions = {
         responsive: true,
-        maintainAspectRatio: true,
+        maintainAspectRatio: false,
+
         plugins: {
             legend: {
-                display: false,
-                position: 'bottom'
+                display: true,
+                position: 'right'
             },
             title: {
                 display: false,
@@ -106,20 +107,32 @@ const History = ({week}) => {
         },
     };
 
-   // Setze die Labels für das Diagramm
-const labels = generateLabelsForWeek(week);
+    // Setze die Labels für das Diagramm
+    const labels = generateLabelsForWeek(week);
 
     const dataBarChart = {
         labels,
         datasets: [
             {
-                label: 'Activity',
-                data: [3, 2, 1, 4, 6, 2], // Die Datenpunkte für das Balkendiagramm
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
+                label: 'Work',
+                data: [5, 6, 7, 8, 5, 4, 3], // Beispielwerte für Arbeitszeit
+                backgroundColor: 'rgba(65, 255, 85, 1)',
+                borderRadius: 4,
+
             },
-            // Weitere Datasets können hier hinzugefügt werden
+            {
+                label: 'Distractions',
+                data: [1, 2, 1, 3, 2, 1, 2], // Beispielwerte für Ablenkungen
+                backgroundColor: 'rgba(255, 85, 85, 1)',
+                borderRadius: 4,
+
+            },
+            {
+                label: 'Breaks',
+                data: [2, 1, 2, 1, 2, 3, 2], // Beispielwerte für Pausen
+                backgroundColor: 'rgba(85, 100, 255, 1)',
+                borderRadius: 4,
+            },
         ],
     };
 

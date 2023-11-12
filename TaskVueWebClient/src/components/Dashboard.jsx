@@ -3,6 +3,7 @@ import {Layout, Menu, DatePicker, ConfigProvider} from 'antd';
 import {
     HistoryOutlined,
     RiseOutlined,
+    HomeOutlined
 } from '@ant-design/icons';
 import 'dayjs/locale/de';
 import History from "./History.jsx";
@@ -11,6 +12,7 @@ import Productivity from "./Productivity.jsx";
 import locale from "antd/es/locale/en_GB";
 import dayjs from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale';
+import Home from "./Home.jsx";
 
 
 dayjs.extend(updateLocale)
@@ -30,7 +32,7 @@ const Dashboard = () => {
 
     const [selectedHeaderItem, setSelectedHeaderItem] = useState(() => {
         const storedValue = sessionStorage.getItem('selectedHeaderItem')
-        return storedValue ? storedValue : 'history';
+        return storedValue ? storedValue : 'home';
     });
 
 
@@ -52,6 +54,7 @@ const Dashboard = () => {
 
 
     const headerItems = [
+        {key: 'home', icon: <HomeOutlined />, label: 'Home'},
         {key: 'history', icon: <HistoryOutlined/>, label: 'History'},
         {key: 'productivity', icon: <RiseOutlined/>, label: 'Productivity'},
     ];
@@ -59,6 +62,9 @@ const Dashboard = () => {
 
     let content;
     switch (selectedHeaderItem) {
+        case 'home':
+            content = <Home/>;
+            break;
         case 'history':
             content = <History week={defaultDates}/>;
             break;
@@ -66,7 +72,7 @@ const Dashboard = () => {
             content = <Productivity/>;
             break;
         default:
-            content = <History/>;
+            content = <Home/>;
     }
 
 
@@ -94,7 +100,7 @@ const Dashboard = () => {
                         }}
                     />
 
-
+                    {selectedHeaderItem !== 'home' ?
                     <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
                         <ConfigProvider locale={locale}>
                             <DatePicker
@@ -107,6 +113,7 @@ const Dashboard = () => {
                             />
                         </ConfigProvider>
                     </div>
+                        : null}
                 </div>
             </Header>
             <Content style={{padding: '0 25px 0 0'}}>

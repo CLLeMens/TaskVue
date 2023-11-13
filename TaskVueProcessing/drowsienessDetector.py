@@ -1,13 +1,13 @@
 import cv2
 import dlib
-import pyttsx3
+#import pyttsx3
 from scipy.spatial import distance
 
 #quelle https://www.geeksforgeeks.org/python-opencv-drowsiness-detection/
 
 # INITIALIZING THE pyttsx3 SO THAT
 # ALERT AUDIO MESSAGE CAN BE DELIVERED
-engine = pyttsx3.init()
+#engine = pyttsx3.init()
 
 # SETTING UP OF CAMERA TO 1 YOU CAN
 # EVEN CHOOSE 0 IN PLACE OF 1

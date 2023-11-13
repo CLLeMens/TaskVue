@@ -5,6 +5,9 @@ import sys
 
 
 def main():
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+    parent_directory = os.path.dirname(current_directory)
+    sys.path.append(parent_directory)
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'TaskVueWebServer.settings')
     try:

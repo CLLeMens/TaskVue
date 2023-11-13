@@ -25,7 +25,7 @@ const Home = () => {
     return (
 
         <>
-            <div style={{marginTop: '50px', padding: '20px', minWidth: '100%',}}>
+            <div style={{marginTop: '50px', padding: '20px'}}>
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -50,7 +50,7 @@ const Home = () => {
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: '3rem',
-                            color: 'black',
+                            color: '#242424',
 
                         }}>
                             02
@@ -69,21 +69,78 @@ const Home = () => {
                         </div>
                     </Card>
                 </div>
-                <Divider orientation="left" style={{color: 'white', borderColor: 'lightgray'}}>Information</Divider>
-                <div className={'information-wrapper'}>
-                    <Title level={4} style={{textAlign: 'left', margin: '50px 0 25px 40px', color: '#ffffff'}}>Monitoring</Title>
-                    <div className={'monitoring-wrapper'} style={{ display: 'flex', flexDirection: 'row', minWidth: '100%'}}>
+                <Divider orientation="left" style={{borderColor: 'lightgray'}}>Information</Divider>
+                <div className={'information-wrapper'} style={{padding: '0 105px 0 0', display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                    <div>
+                        <Title level={4} style={{
+                            textAlign: 'left',
+                            margin: '50px 0 25px 40px',
+                            color: '#ffffff',
+                        }}>Monitoring</Title>
+                        <div className={'monitoring-wrapper'}
+                             style={{display: 'flex', flexDirection: 'row', minWidth: '100%'}}>
 
-                        <ul style={{listStyle: 'none', textAlign: 'left', marginLeft: '40px', display: 'flex', flexDirection: 'column', gap: '20px'}}>
-                            <li>Distraction-Detection</li>
-                            <li>Fatigue-Detection</li>
-                            <li>Input-Monitoring</li>
-                        </ul>
-                        <ul style={{listStyle: 'none', marginLeft: '40px', display: 'flex', flexDirection: 'column', gap: '20px'}}>
-                            <Tag color={'green'} style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>Active</Tag>
-                            <Tag color={'green'} style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>Active</Tag>
-                            <Tag color={'red'} style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>Inactive</Tag>
-                        </ul>
+                            <ul style={{
+                                listStyle: 'none',
+                                textAlign: 'left',
+                                marginLeft: '40px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '20px'
+                            }}>
+                                <li>Distraction-Detection</li>
+                                <li>Fatigue-Detection</li>
+                                <li>Input-Monitoring</li>
+                            </ul>
+                            <ul style={{
+                                listStyle: 'none',
+                                marginLeft: '40px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '20px'
+                            }}>
+                                <Tag color={'green'}
+                                     style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>Active</Tag>
+                                <Tag color={'green'}
+                                     style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>Active</Tag>
+                                <Tag color={'red'}
+                                     style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>Inactive</Tag>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div className={'goals-wrapper'}>
+                        <Title level={4} style={{
+                            textAlign: 'left',
+                            margin: '50px 0 25px 40px',
+                            color: '#ffffff',
+                        }}>Goals</Title>
+                        <div style={{display: 'flex', flexDirection: 'row'}}>
+                            <ul style={{
+                                listStyle: 'none',
+                                textAlign: 'left',
+                                marginLeft: '40px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '20px'
+                            }}>
+                                <li>Working hours</li>
+                                <li>Breaks</li>
+                                <li>Distractions</li>
+                            </ul>
+                            <ul style={{
+                                listStyle: 'none',
+                                marginLeft: '40px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '20px'
+                            }}>
+                                <li>7.5h / 8h</li>
+                                <li>0.2h / 2h</li>
+                                <li>1.2h / 1h</li>
+                            </ul>
+                        </div>
+
                     </div>
                 </div>
             </div>

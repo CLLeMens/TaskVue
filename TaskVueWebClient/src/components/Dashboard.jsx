@@ -14,7 +14,6 @@ import dayjs from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import Home from "./Home.jsx";
 
-
 dayjs.extend(updateLocale)
 dayjs.updateLocale('en', {
     weekStart: 1
@@ -27,7 +26,7 @@ const Dashboard = () => {
     const [theme, setTheme] = useState('light');
 
     const currentWeek = dayjs().week();
-    const [defaultDates, setDefaultDates] = useState(currentWeek);
+
 
 
     const [selectedHeaderItem, setSelectedHeaderItem] = useState(() => {
@@ -66,10 +65,10 @@ const Dashboard = () => {
             content = <Home/>;
             break;
         case 'history':
-            content = <History week={defaultDates}/>;
+            content = <History week={currentWeek}/>;
             break;
         case 'productivity':
-            content = <Productivity/>;
+            content = <Productivity week={currentWeek}/>;
             break;
         default:
             content = <Home/>;
@@ -99,21 +98,6 @@ const Dashboard = () => {
                             color: theme === 'dark' ? '#ffffff' : 'black',
                         }}
                     />
-
-                    {selectedHeaderItem !== 'home' ?
-                    <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end'}}>
-                        <ConfigProvider locale={locale}>
-                            <DatePicker
-                                placeholder="Select week"
-                                onChange={e => setDefaultDates(dayjs(e).week())}
-                                picker="week"
-
-                                style={{marginRight: '25px'}}
-                                defaultValue={dayjs().week(currentWeek)}
-                            />
-                        </ConfigProvider>
-                    </div>
-                        : null}
                 </div>
             </Header>
             <Content style={{padding: '0 25px 0 0'}}>

@@ -1,9 +1,8 @@
-import {Badge, List, Tag, Typography} from "antd";
+import {Badge, ConfigProvider, DatePicker, List, Tag, Typography} from "antd";
 import React, {useEffect, useState} from "react";
 import dayjs from "dayjs";
-import weekOfYear from 'dayjs/plugin/weekOfYear';
 import {Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title as TitleJS, Tooltip, Legend} from 'chart.js';
-import {Bar} from 'react-chartjs-2';
+import locale from "antd/es/locale/en_GB";
 
 const {Title} = Typography;
 
@@ -20,6 +19,9 @@ ChartJS.register(
 const History = ({week}) => {
     const [theme, setTheme] = useState('light');
     const [defaultDates, setDefaultDates] = useState(week);
+    const currentWeek = dayjs().week();
+
+
 
     useEffect(() => {
         setDefaultDates(week);
@@ -73,83 +75,22 @@ const History = ({week}) => {
         color: theme === 'dark' ? '#ffffff' : 'black',
     });
 
-// Diese Funktion generiert die Labels für die gegebene Woche
-    const generateLabelsForWeek = (week) => {
-        // Finde den ersten Tag der gegebenen Woche und das entsprechende Jahr
-        const year = dayjs().week(week).year();
-        let firstDayOfWeek = dayjs().year(year).week(week).startOf('week');
-
-        // Erstelle ein Array für die Labels
-        const labels = [];
-
-        // Füge jeden Tag der Woche zum Array hinzu
-        for (let i = 0; i < 7; i++) {
-            labels.push(firstDayOfWeek.add(i, 'day').format('DD.MM'));
-        }
-
-        return labels;
-    };
-
-    // Konfiguration für das Balkendiagramm
-    const barChartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-
-        plugins: {
-            legend: {
-                display: true,
-                position: 'right'
-            },
-            title: {
-                display: false,
-                text: 'Aktivitätsgraph'
-            },
-        },
-    };
-
-    // Setze die Labels für das Diagramm
-    const labels = generateLabelsForWeek(week);
-
-    const dataBarChart = {
-        labels,
-        datasets: [
-            {
-                label: 'Work',
-                data: [5, 6, 7, 8, 5, 4, 3], // Beispielwerte für Arbeitszeit
-                backgroundColor: 'rgba(65, 255, 85, 1)',
-                borderRadius: 4,
-
-            },
-            {
-                label: 'Distractions',
-                data: [1, 2, 1, 3, 2, 1, 2], // Beispielwerte für Ablenkungen
-                backgroundColor: 'rgba(255, 85, 85, 1)',
-                borderRadius: 4,
-
-            },
-            {
-                label: 'Breaks',
-                data: [2, 1, 2, 1, 2, 3, 2], // Beispielwerte für Pausen
-                backgroundColor: 'rgba(85, 100, 255, 1)',
-                borderRadius: 4,
-            },
-        ],
-    };
-
-    const generateWeekLabels = () => {
-        const startOfWeek = dayjs().startOf('week');
-        const labels = [];
-
-        for (let i = 1; i <= 6; i++) { // Passen Sie die Schleife an, wenn Sie mehr oder weniger Tage möchten
-            labels.push(startOfWeek.add(i, 'day').format('DD.MM.'));
-        }
-
-        return labels;
-    };
-
 
     return (
         <div className="site-layout-content" style={{margin: '16px 0', minWidth: '100%'}}>
+            <div style={{flex: 1, display: 'flex', justifyContent: 'flex-end', minWidth: '100%', margin: '30px 0 30px auto'}}>
+                <ConfigProvider locale={locale}>
+                    <DatePicker
+                        placeholder="Select week"
+                        onChange={e => setDefaultDates(dayjs(e).week())}
+                        picker="week"
+
+                        style={{marginLeft: '23px', marginRight: 'auto'}}
+                        defaultValue={dayjs().week(currentWeek)}
+                    />
+                </ConfigProvider>
+            </div>
+
             <List
                 className="history-wrapper"
                 itemLayout="horizontal"
@@ -183,11 +124,6 @@ const History = ({week}) => {
                     </List.Item>
                 )}
             />
-            <Title level={5} style={{...getTextStyle(), textAlign: 'left', margin: '25px 24px 10px 24px'}}>Activity
-                Chart</Title>
-            <div className={'chart-wrapper'}>
-                <Bar options={barChartOptions} data={dataBarChart}/>
-            </div>
 
 
         </div>

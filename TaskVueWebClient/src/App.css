@@ -112,7 +112,8 @@ body {
 }
 
 
-.content-wrapper div:nth-of-type(1) {
+.content-wrapper >.ant-layout-has-sider {
+    min-width: 300px;
     max-width: 300px;
 }
 
@@ -132,6 +133,7 @@ body {
 }
 
 .chart-wrapper {
+    min-width: 100%;
     max-height: 180px;
     margin-left: 24px;
 }
@@ -175,4 +177,98 @@ body {
 .timer-card div span {
     color: grey;
     font-size: 2rem; /* Kleinere Schrift für Sekunden */
+}
+
+.dark-theme-slider > .ant-slider-rail {
+    background-color: lightgray !important;
+}
+
+
+.calendar-container {
+    border-radius: 16px;
+    padding: 20px;
+    min-width: 70%;
+    max-width: 70%;
+    display: flex;
+    flex-direction: column;
+    font-family: Arial, sans-serif;
+    margin: 20px auto;
+}
+
+.month-switch {
+    padding: 0 45px;
+    font-weight: 600;
+
+}
+
+.month-display {
+    font-weight: 600;
+    text-align: center;
+    font-size: 22px;
+    margin: 0 0 10px 0;
+}
+
+.days-of-week, .date-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+.day-of-week {
+    text-align: center;
+    font-weight: bold;
+
+}
+
+.day {
+    color: #242424;
+    text-align: center;
+    border-radius: 12px;
+    height: 30px;
+    margin: 5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+}
+
+.last-month {
+    color: #d3d3d3; /* Hellgrau für Tage des letzten Monats */
+}
+
+.this-month {
+    /* Standard-Styling für Tage dieses Monats */
+}
+
+/* ... Ihre bestehenden Stile ... */
+
+.not-this-month {
+    color: #ffffff;
+}
+
+
+.low {
+    background-color: rgba(240, 128, 128, 0.8)
+}
+
+.medium {
+    background-color: rgba(250, 241, 96, 0.8)
+}
+
+.high {
+    background-color: rgba(126,211,127,0.80)
+}
+
+.none {
+    background-color: rgba(191, 191, 191, 1)
+}
+
+.today {
+    border: 2px solid #1776fc;
+}
+
+.goals-table{
+    min-width: 87%;
+     max-width: 87%;
+    margin: 0 auto;
+
 }

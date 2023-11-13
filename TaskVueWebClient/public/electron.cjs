@@ -15,7 +15,7 @@ function createWindow() {
     // Create a new BrowserWindow instance
     win = new BrowserWindow({
         width: 1280,
-        height: 860,
+        height: 768,
         title: 'TaskVue',
         resizable: false,
         webPreferences: {

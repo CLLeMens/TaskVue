@@ -2,7 +2,7 @@
 const {app, BrowserWindow, Tray, Menu, nativeImage, screen} = require('electron');
 // 'path' module for handling file paths
 const path = require('path');
-
+const WebSocket = require('ws');
 // Define the path to the application's icon
 const iconPath = path.join(__dirname, '..', 'public', 'logo.png');
 
@@ -34,12 +34,27 @@ function createWindow() {
     if (process.platform === 'darwin' && app.dock) {
         app.dock.setIcon(logo);
     }
+
+    //
+    // IstVerbindung zum WebSocket herstellen
+    const ws = new WebSocket('ws://127.0.0.1:8000/timer/');
+
+    ws.onopen = function () {
+        // Senden einer Nachricht an den Server
+        ws.send(JSON.stringify({message: "Hello from the client!"}));
+    };
+
+    ws.onmessage = function (event) {
+        // Empfangen einer Nachricht vom Server
+        const data = JSON.parse(event.data);
+        console.log("Message from server: ", data.message);
+    };
+
+
 }
 
 // Function to create the system tray icon and associated functionality.
 function createTray() {
-    // Log the path from which the tray icon is loaded.
-    console.log('Loading the Tray icon from:', iconPath);
 
     // Determine the scale factor of the primary display and set the icon size accordingly.
     const scaleFactor = screen.getPrimaryDisplay().scaleFactor;

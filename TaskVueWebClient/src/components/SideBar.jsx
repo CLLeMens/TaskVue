@@ -43,13 +43,13 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
 
     // Beispieldaten für Ereignisse
     const events = [
-        {time: '08:00 - 08:30', title: 'Smartphone', color: 'pink'},
-        {time: '08:30 - 12:00', title: 'Work', color: 'green'},
-        {time: '12:00 - 12:30', title: 'Lunch Break', color: 'blue'},
-        {time: '12:30 - 14:00', title: 'Work', color: 'green'},
-        {time: '14:00 - 14:10', title: 'Another Person', color: 'yellow'},
-        {time: '14:10 - 15:30', title: 'Work', color: 'green'},
-        {time: '15:30 - 16:00', title: 'Smartphone', color: 'pink'},
+        {time: '08:00 - 08:30', title: 'Distraction', color: 'rgba(240, 128, 128, 0.8)'},
+        {time: '08:30 - 12:00', title: 'Work', color: 'rgba(126,211,127,0.80)'},
+        {time: '12:00 - 12:30', title: 'Break', color: 'rgba(85, 100, 255, 0.8)'},
+        {time: '12:30 - 14:00', title: 'Work', color: 'rgba(126,211,127,0.80)'},
+        {time: '14:00 - 14:10', title: 'Distraction', color: 'rgba(240, 128, 128, 0.8)'},
+        {time: '14:10 - 15:30', title: 'Work', color: 'rgba(126,211,127,0.80)'},
+        {time: '15:30 - 16:00', title: 'Distraction', color: 'rgba(240, 128, 128, 0.8)'},
 
     ];
 

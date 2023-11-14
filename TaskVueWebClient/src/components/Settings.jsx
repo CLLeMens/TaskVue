@@ -1,40 +1,80 @@
 import React, {useEffect, useState} from 'react';
 import {Switch, Layout, Slider, Typography, Menu, Button, Select} from 'antd';
-import {HistoryOutlined, HomeOutlined, RiseOutlined} from "@ant-design/icons";
+import {makeRequest} from "../api/api.js";
+import {USERSETTINGS} from "../api/endpoints.js";
 
 const {Title} = Typography;
 
 const Settings = () => {
-    const [isNotificationsOn, setIsNotificationsOn] = useState(false);
-    const [appTheme, setAppTheme] = useState('system');
-    const [isTrackFatigueOn, setIsTrackFatigueOn] = useState(false);
-    const [isTrackOtherPeopleOn, setIsTrackOtherPeopleOn] = useState(false);
-    const [isTrackSmartphoneOn, setIsTrackSmartphoneOn] = useState(false);
-    const [isStandUpReminderOn, setIsStandUpReminderOn] = useState(false);
-    const [isBreakReminderOn, setIsBreakReminderOn] = useState(false);
-    const [isStayProductiveReminderOn, setIsStayProductiveReminderOn] = useState(false);
-    const [isPositiveFeedbackOn, setIsPositiveFeedbackOn] = useState(false);
-    const [trackingGrade, setTrackingGrade] = useState(0);
     const [theme, setTheme] = useState('light');
     const [selectedHeaderItem, setSelectedHeaderItem] = useState(() => {
         const storedValue = sessionStorage.getItem('selectedHeaderItemSettings')
         return storedValue ? storedValue : 'settings';
     });
+    const [initialState, setInitialState] = useState({
+        isNotificationsOn: null,
+        appTheme: null,
+        isTrackFatigueOn: null,
+        isTrackOtherPeopleOn: null,
+        isTrackSmartphoneOn: null,
+        isStandUpReminderOn: null,
+        isBreakReminderOn: null,
+        isStayProductiveReminderOn: null,
+        isPositiveFeedbackOn: null,
+        trackingGrade: null,
+    });
+
+    const [editedData, setEditedData] = useState({
+        isNotificationsOn: null,
+        appTheme: null,
+        isTrackFatigueOn: null,
+        isTrackOtherPeopleOn: null,
+        isTrackSmartphoneOn: null,
+        isStandUpReminderOn: null,
+        isBreakReminderOn: null,
+        isStayProductiveReminderOn: null,
+        isPositiveFeedbackOn: null,
+        trackingGrade: null,
+    });
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await makeRequest('GET', USERSETTINGS);
+
+                setEditedData({
+                    isNotificationsOn: response.notifications,
+                    appTheme: response.theme,
+                    isTrackFatigueOn: response.track_fatigue,
+                    isTrackOtherPeopleOn: response.track_other_people,
+                    isTrackSmartphoneOn: response.track_smartphone,
+                    isStandUpReminderOn: response.stand_up_reminder,
+                    isBreakReminderOn: response.break_reminder,
+                    isStayProductiveReminderOn: response.productivity_reminder,
+                    isPositiveFeedbackOn: response.positive_feedback_reminder,
+                    trackingGrade: response.tracking_grade,
+                });
+
+                setInitialState({
+                    isNotificationsOn: response.notifications,
+                    appTheme: response.theme,
+                    isTrackFatigueOn: response.track_fatigue,
+                    isTrackOtherPeopleOn: response.track_other_people,
+                    isTrackSmartphoneOn: response.track_smartphone,
+                    isStandUpReminderOn: response.stand_up_reminder,
+                    isBreakReminderOn: response.break_reminder,
+                    isStayProductiveReminderOn: response.productivity_reminder,
+                    isPositiveFeedbackOn: response.positive_feedback_reminder,
+                    trackingGrade: response.tracking_grade,
+                });
 
 
-    // Anfangszustände als Referenz speichern
-    const initialState = {
-        isNotificationsOn: false,
-        appTheme: 'system',
-        isTrackFatigueOn: false,
-        isTrackOtherPeopleOn: false,
-        isTrackSmartphoneOn: false,
-        isStandUpReminderOn: false,
-        isBreakReminderOn: false,
-        isStayProductiveReminderOn: false,
-        isPositiveFeedbackOn: false,
-        trackingGrade: 0,
-    };
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        fetchData();
+    }, []);
 
 
     useEffect(() => {
@@ -60,33 +100,26 @@ const Settings = () => {
 
     // Prüfe, ob Änderungen vorgenommen wurden
     const hasChanges = () => {
-        return isNotificationsOn !== initialState.isNotificationsOn ||
-            appTheme !== initialState.appTheme ||
-            isTrackFatigueOn !== initialState.isTrackFatigueOn ||
-            isTrackOtherPeopleOn !== initialState.isTrackOtherPeopleOn ||
-            isTrackSmartphoneOn !== initialState.isTrackSmartphoneOn ||
-            isStandUpReminderOn !== initialState.isStandUpReminderOn ||
-            isBreakReminderOn !== initialState.isBreakReminderOn ||
-            isStayProductiveReminderOn !== initialState.isStayProductiveReminderOn ||
-            isPositiveFeedbackOn !== initialState.isPositiveFeedbackOn ||
-            trackingGrade !== initialState.trackingGrade;
+        return Object.keys(editedData).some(key => editedData[key] !== initialState[key]);
     };
 
-    // Funktion zum Speichern der Einstellungen
-    const saveSettings = () => {
-        console.log({
-            isNotificationsOn,
-            appTheme,
-            isTrackFatigueOn,
-            isTrackOtherPeopleOn,
-            isTrackSmartphoneOn,
-            isStandUpReminderOn,
-            isBreakReminderOn,
-            isStayProductiveReminderOn,
-            isPositiveFeedbackOn,
-            trackingGrade
-        });
+
+    const handleInputChange = (name, value) => {
+        console.log(name, value)
+        setEditedData(prevState => ({
+            ...prevState,
+            [name]: value,
+        }));
     };
+    // Funktion zum Speichern der Einstellungen
+    const saveSettings = async () => {
+       try {
+           await makeRequest('POST', USERSETTINGS, editedData);
+       } catch (error) {
+              console.log(error);
+       }
+    };
+
 
     const headerItems = [
         {key: 'settings', label: 'Settings'},
@@ -159,28 +192,23 @@ const Settings = () => {
                         marginRight: '50px',
                         width: '100px'
                     }}>
-                        <Switch style={{width: '55px', marginLeft: 'auto'}} checked={isNotificationsOn} onChange={setIsNotificationsOn}/>
+                        <Switch style={{width: '55px', marginLeft: 'auto'}} checked={editedData.isNotificationsOn}
+                                onChange={e => handleInputChange('isNotificationsOn', e)}/>
                         <Select
                             style={{width: '100px'}}
-                            onChange={setAppTheme}
-                            defaultValue={'system'}
+                            onChange={e => handleInputChange('appTheme', e)}
+                            value={editedData.appTheme} // Verwenden Sie value anstelle von defaultValue
                             options={[
-                                {
-                                    value: 'system',
-                                    label: 'System',
-                                },   {
-                                    value: 'dark',
-                                    label: 'Dark',
-                                },
-                                   {
-                                    value: 'light',
-                                    label: 'Light',
-                                }
-                                ]} />
+                                {value: 'system', label: 'System'},
+                                {value: 'dark', label: 'Dark'},
+                                {value: 'light', label: 'Light'}
+                            ]}
+                        />
+
                     </div>
 
                 </div>
-                {isNotificationsOn && (
+                {editedData.isNotificationsOn && (
                     <div>
                         <Title level={4} style={getTextStyle()}>Notifications</Title>
                         <div className={'notifications-wrapper'}
@@ -212,10 +240,14 @@ const Settings = () => {
                                 marginRight: '50px',
                                 width: '55px'
                             }}>
-                                <Switch checked={isStandUpReminderOn} onChange={setIsStandUpReminderOn}/>
-                                <Switch checked={isBreakReminderOn} onChange={setIsBreakReminderOn}/>
-                                <Switch checked={isStayProductiveReminderOn} onChange={setIsStayProductiveReminderOn}/>
-                                <Switch checked={isPositiveFeedbackOn} onChange={setIsPositiveFeedbackOn}/>
+                                <Switch checked={editedData.isStandUpReminderOn}
+                                         onChange={e => handleInputChange('isStandUpReminderOn', e)}/>
+                                <Switch checked={editedData.isBreakReminderOn}
+                                        onChange={e => handleInputChange('isBreakReminderOn', e)}/>
+                                <Switch checked={editedData.isStayProductiveReminderOn}
+                                        onChange={e => handleInputChange('isStayProductiveReminderOn', e)}/>
+                                <Switch checked={editedData.isPositiveFeedbackOn}
+                                        onChange={e => handleInputChange('isPositiveFeedbackOn', e)}/>
                             </div>
 
                         </div>
@@ -246,17 +278,17 @@ const Settings = () => {
                         marginRight: '50px',
 
                     }}>
-                        <Switch checked={isTrackFatigueOn} onChange={setIsTrackFatigueOn}
+                        <Switch checked={editedData.isTrackFatigueOn} onChange={e => handleInputChange('isTrackFatigueOn', e)}
                                 style={{width: '55px', marginLeft: 'auto'}}/>
-                        <Switch checked={isTrackOtherPeopleOn} onChange={setIsTrackOtherPeopleOn}
+                        <Switch checked={editedData.isTrackOtherPeopleOn} onChange={e => handleInputChange('isTrackOtherPeopleOn', e)}
                                 style={{width: '55px', marginLeft: 'auto'}}/>
-                        <Switch checked={isTrackSmartphoneOn} onChange={setIsTrackSmartphoneOn}
+                        <Switch checked={editedData.isTrackSmartphoneOn} onChange={e => handleInputChange('isTrackSmartphoneOn', e)}
                                 style={{width: '55px', marginLeft: 'auto'}}/>
                         <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', width: '300px'}}>
                             <Slider
                                 className={theme === 'dark' ? 'dark-theme-slider' : "light-theme-slider"}
-                                value={trackingGrade}
-                                onChange={setTrackingGrade}
+                                value={editedData.trackingGrade}
+                               onChange={e => handleInputChange('trackingGrade', e)}
                                 min={0}
                                 max={1}
                                 step={0.1}
@@ -267,7 +299,7 @@ const Settings = () => {
                                 }} // Verwenden Sie flex: 1, damit der Slider die meiste Breite einnimmt
                             />
                             <div style={{minWidth: '100%', textAlign: 'right'}}>
-                                {trackingGrade >= 0.75 ? 'High' : trackingGrade >= 0.5 ? 'Medium' : 'Low'}
+                                {editedData.trackingGrade >= 0.75 ? 'High' : editedData.trackingGrade >= 0.5 ? 'Medium' : 'Low'}
                             </div>
                         </div>
                     </div>

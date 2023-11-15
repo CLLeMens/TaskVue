@@ -12,15 +12,13 @@ function Main() {
     });
 
     useEffect(() => {
-
         sessionStorage.setItem('selectedMenuItem', selectedMenuItem);
-
-
     }, [selectedMenuItem]);
+
     const handleMenuSelect = (key) => {
-        console.log(key)
         setSelectedMenuItem(key);
     };
+
     let content;
     switch (selectedMenuItem) {
         case 'dashboard':

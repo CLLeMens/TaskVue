@@ -11,7 +11,6 @@ const {Title} = Typography;
 const Home = () => {
     const {theme, toggleTheme} = useTheme();
     const [information, setInformation] = useState(null);
-    // Zustände für den Timer und den Laufstatus
     const [timer, setTimer] = useState(0);
     const [isRunning, setIsRunning] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -83,6 +82,7 @@ const Home = () => {
             isRunning: true,
             pauseTime: pauseTime,
         }));
+        processFlow('start');
     };
 
 
@@ -98,9 +98,12 @@ const Home = () => {
         setTimer(0);
         setPauseTime(0);
         setStartTime(null);
+
+        processFlow('stop');
     };
 
-    const toggleTimer = () => {
+    const toggleTimer = (process) => {
+
         setIsRunning(!isRunning);
         if (!isRunning) {
             // Berechnen der Pausezeit in ganzen Sekunden
@@ -124,6 +127,7 @@ const Home = () => {
                 breakTime: new Date()
             }));
         }
+        processFlow(process);
     };
 
     const handleOk = () => {
@@ -154,6 +158,30 @@ const Home = () => {
             </>
         );
     };
+
+
+    const processFlow = (process) => {
+        // check if localstorage with the key 'processFlow' exists if not create it
+        if (!localStorage.getItem('processFlow')) {
+            localStorage.setItem('processFlow', JSON.stringify([]));
+        }
+
+        //get the current process flow from localstorage
+        const processFlow = JSON.parse(localStorage.getItem('processFlow'));
+
+        //create a new process object
+        const newProcess = {
+            process: process,
+            // time in HH:MM formal
+            time: new Date().toLocaleTimeString(),
+        }
+
+        //add the new process to the process flow
+        processFlow.push(newProcess);
+
+        //save the new process flow to localstorage
+        localStorage.setItem('processFlow', JSON.stringify(processFlow));
+    }
 
 
     const enabledButtonStyle = {
@@ -194,9 +222,10 @@ const Home = () => {
                 </div>
                 <div className={'timer-wrapper'}>
                     <Button type={'primary'} style={enabledButtonStyle}
-                            onClick={isRunning ? toggleTimer : (timer > 0 ? toggleTimer : startTimer)}>
+                            onClick={() => isRunning ? toggleTimer('pause') : (timer > 0 ? toggleTimer('start') : startTimer())}>
                         {isRunning ? 'Pause' : (timer > 0 ? 'Continue' : 'Start')}
                     </Button>
+
 
                     <Button type={'primary'} style={timer > 0 ? enabledButtonStyle : disabledButtonStyle}
                             onClick={stopTimer}

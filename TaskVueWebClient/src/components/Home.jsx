@@ -1,13 +1,14 @@
 import React, {useState, useEffect} from 'react';
 import {Layout, Button, Card, Tag, Row, Col, Divider, Typography} from 'antd';
 import {InfoCircleTwoTone} from '@ant-design/icons';
+import {useTheme} from "../context/ThemeContext.jsx";
 
 
 const {Title} = Typography;
 
 
 const Home = () => {
-
+    const {theme, toggleTheme} = useTheme();
 
     const enabledButtonStyle = {
         minWidth: '100px',
@@ -22,6 +23,10 @@ const Home = () => {
         cursor: 'not-allowed',
     };
 
+    const getFontColor = () => ({
+        color: theme === 'dark' ? '#ffffff' : null,
+    })
+
     return (
 
         <>
@@ -33,11 +38,11 @@ const Home = () => {
                     textAlign: 'left',
                     minWidth: '100%'
                 }}>
-                <span style={{fontWeight: 'bold', fontSize: '22px'}}>
+                <span style={{...getFontColor(), fontWeight: 'bold', fontSize: '22px'}}>
                     <InfoCircleTwoTone twoToneColor="#52c41a" style={{fontSize: '24px', marginRight: '10px',}}/> Note
                 </span>
 
-                    <span style={{marginLeft: '38px',}}>
+                    <span style={{...getFontColor(), marginLeft: '38px'}}>
                     The Software is running. To pause or continue click the buttons below.
                 </span>
                 </div>
@@ -69,8 +74,13 @@ const Home = () => {
                         </div>
                     </Card>
                 </div>
-                <Divider orientation="left" style={{borderColor: 'lightgray'}}>Information</Divider>
-                <div className={'information-wrapper'} style={{padding: '0 105px 0 0', display: 'flex', flexDirection: 'row', justifyContent: 'space-between'}}>
+                <Divider orientation="left" style={{...getFontColor(), borderColor: 'lightgray'}}>Information</Divider>
+                <div className={'information-wrapper'} style={{
+                    padding: '0 105px 0 0',
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between'
+                }}>
                     <div>
                         <Title level={4} style={{
                             textAlign: 'left',
@@ -81,6 +91,7 @@ const Home = () => {
                              style={{display: 'flex', flexDirection: 'row', minWidth: '100%'}}>
 
                             <ul style={{
+                                ...getFontColor(),
                                 listStyle: 'none',
                                 textAlign: 'left',
                                 marginLeft: '40px',
@@ -117,6 +128,7 @@ const Home = () => {
                         }}>Goals</Title>
                         <div style={{display: 'flex', flexDirection: 'row'}}>
                             <ul style={{
+                                ...getFontColor(),
                                 listStyle: 'none',
                                 textAlign: 'left',
                                 marginLeft: '40px',
@@ -129,6 +141,7 @@ const Home = () => {
                                 <li>Distractions</li>
                             </ul>
                             <ul style={{
+                                ...getFontColor(),
                                 listStyle: 'none',
                                 marginLeft: '40px',
                                 display: 'flex',

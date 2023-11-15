@@ -6,31 +6,14 @@ import {
     AimOutlined,
     SettingOutlined,
 } from '@ant-design/icons';
+import {useTheme} from "../context/ThemeContext.jsx";
 
 const {Sider} = Layout;
 const {Title, Paragraph, Text} = Typography;
 
 
 const SideBar = ({onMenuSelect, selectedItem}) => {
-    const [theme, setTheme] = useState('light');
-
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        // Hilfsfunktion, um das Theme zu ändern
-        const handleChange = (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        };
-
-        // Event Listener hinzufügen
-        mediaQuery.addEventListener('change', handleChange);
-
-        // Setze das initiale Theme basierend auf der aktuellen Einstellung
-        handleChange(mediaQuery);
-
-        // Cleanup-Funktion, um den Event Listener zu entfernen
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
+    const { theme, toggleTheme } = useTheme();
 
 
     const iconStyle = {fontSize: '18px'}; // Definieren Sie einen gemeinsamen Stil für alle Icons
@@ -66,6 +49,7 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
                     left: 0,
                     top: 0,
                     backgroundColor: theme === 'dark' ? '#2b2b2d' : '#f4f4f6',
+                    transition: 'background-color 0.4s ease, color 0.4s ease',
                 }}
             >
                 <Space
@@ -84,6 +68,7 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
                         onClick={(item) => onMenuSelect(item.key)}
                         theme={theme}
                         style={{
+                            transition: 'background-color 0.4s ease, color 0.4s ease',
                             backgroundColor: theme === 'dark' ? '#2b2b2d' : '#f4f4f6',
                             textAlign: 'left',
                             fontSize: {iconStyle},

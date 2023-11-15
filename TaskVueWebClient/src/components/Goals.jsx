@@ -1,15 +1,18 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {TimePicker, InputNumber, Table, Layout, Menu, ConfigProvider, Button} from 'antd';
 import moment from 'moment';
+import {makeRequest} from "../api/api.js";
+import {USERGOALS} from "../api/endpoints.js";
+import dayjs from "dayjs";
+import {useTheme} from "../context/ThemeContext.jsx";
 
 const Goals = () => {
-    const [theme, setTheme] = useState('light');
-
-
+    const {theme, toggleTheme} = useTheme();
+    const [loading, setLoading] = useState(false);
     const format = 'HH:mm';
+    const [columns, setColumns] = useState([]);
 
-
-    const initialData = [
+    const [initialData, setInitialData] = useState([
         {
             key: '1',
             day: 'Monday',
@@ -66,87 +69,185 @@ const Goals = () => {
             breakTime: null,
             distractions: null
         },
+    ])
 
-
-    ];
-    const [data, setData] = useState(initialData);
-
-    const columns = [
+    const [editedData, setEditedData] = useState([
         {
-            title: 'Day',
-            dataIndex: 'day',
-            key: 'day',
+            key: '1',
+            day: 'Monday',
+            workload: null,
+            end: null,
+            breakTime: null,
+            distractions: null
         },
         {
-            title: 'Workload',
-            dataIndex: 'workload',
-            key: 'workload',
-
-            render: (text, record) => (
-                <TimePicker
-
-                    defaultValue={record.workload}
-                    format={format}
-                    onChange={(time) => handleTimeChange(record.key, 'workload', time)}
-                />
-            ),
+            key: '2',
+            day: 'Tuesday',
+            workload: null,
+            end: null,
+            breakTime: null,
+            distractions: null
         },
         {
-            title: 'Break',
-            dataIndex: 'breakTime',
-            key: 'breakTime',
-            render: (text, record) => (
-                <TimePicker
-                    defaultValue={record.breakTime}
-                    format={format}
-                    onChange={(time) => handleTimeChange(record.key, 'breakTime', time)}
-                />
-            ),
+            key: '3',
+            day: 'Wednesday',
+            workload: null,
+            end: null,
+            breakTime: null,
+            distractions: null
         },
         {
-            title: 'Distractions',
-            dataIndex: 'distractions',
-            key: 'distractions',
-            render: (text, record) => (
-                <TimePicker
-                    defaultValue={record.distractions}
-                    format={format}
-                    onChange={(value) => handleTimeChange(record.key, 'distractions', value)}
-                />
-            ),
+            key: '4',
+            day: 'Thursday',
+            workload: null,
+            end: null,
+            breakTime: null,
+            distractions: null
         },
-    ];
+        {
+            key: '5',
+            day: 'Friday',
+            workload: null,
+            end: null,
+            breakTime: null,
+            distractions: null
+        },
+        {
+            key: '6',
+            day: 'Saturday',
+            workload: null,
+            end: null,
+            breakTime: null,
+            distractions: null
+        },
+        {
+            key: '7',
+            day: 'Sunday',
+            workload: null,
+            end: null,
+            breakTime: null,
+            distractions: null
+        },
+    ])
+
 
     useEffect(() => {
-
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        // Hilfsfunktion, um das Theme zu ändern
-        const handleChange = (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
+        const fetchData = async () => {
+            try {
+                const response = await makeRequest('GET', USERGOALS);
+                setEditedData(response)
+                setInitialData(response)
+            } catch (error) {
+                console.log(error);
+            }
         };
-
-        // Event Listener hinzufügen
-        mediaQuery.addEventListener('change', handleChange);
-
-        // Setze das initiale Theme basierend auf der aktuellen Einstellung
-        handleChange(mediaQuery);
-
-        // Cleanup-Funktion, um den Event Listener zu entfernen
-        return () => mediaQuery.removeEventListener('change', handleChange);
+        fetchData();
     }, []);
 
 
+    function decimalToTime(decimal) {
+
+        // Ermittelt die Stunden (ganzzahliger Teil der Dezimalzahl)
+        const hours = Math.floor(decimal);
+
+        // Wandelt den Dezimalteil in Minuten um (multipliziert mit 60)
+        const minutes = Math.round((decimal - hours) * 60);
+
+        // Formatiert Stunden und Minuten in ein HH:mm-Format
+        // Fügt eine führende Null hinzu, falls nötig
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+    }
+
+
+    function timeToDecimal(timeString) {
+        // Zerlegt die Zeit in Stunden und Minuten
+        const [hours, minutes] = timeString.split(':').map(Number);
+
+        // Berechnet die Dezimalzeit
+        return hours + minutes / 60;
+    }
+
+    useEffect(() => {
+        setColumns([
+
+            {
+                title: 'Day',
+                dataIndex: 'day',
+                key: 'day',
+            },
+            {
+                title: 'Workload',
+                dataIndex: 'workload',
+                key: 'workload',
+
+                render: (text, record) => {
+                    const timeString = record.workload !== null ? decimalToTime(record.workload) : null;
+                    const momentTime = timeString ? dayjs(timeString, format) : null;
+
+                    return (
+                        <TimePicker
+                            value={momentTime}
+                            format={format}
+                            onChange={(time, timeString) => handleTimeChange(record.key, 'workload', time, timeString)}
+                        />
+                    );
+                },
+            },
+            {
+                title: 'Break',
+                dataIndex: 'breakTime',
+                key: 'breakTime',
+                render: (text, record) => {
+                    const timeString = record.breakTime !== null ? decimalToTime(record.breakTime) : null;
+                    const momentTime = timeString ? dayjs(timeString, format) : null;
+
+                    return (
+                        <TimePicker
+                            value={momentTime}
+                            format={format}
+                            onChange={(time) => handleTimeChange(record.key, 'breakTime', time)}
+                        />
+                    )
+
+                },
+            },
+            {
+                title: 'Distractions',
+                dataIndex: 'distractions',
+                key: 'distractions',
+                render: (text, record) => {
+                    const timeString = record.distractions !== null ? decimalToTime(record.distractions) : null;
+                    const momentTime = timeString ? dayjs(timeString, format) : null;
+
+                    return (
+                        <TimePicker
+                            value={momentTime}
+                            format={format}
+                            onChange={(value) => handleTimeChange(record.key, 'distractions', value)}
+                        />
+                    )
+                },
+            },
+        ])
+        ;
+    }, [editedData]);
+
+
     const handleTimeChange = (key, field, time) => {
-        const newData = data.map((item) => {
+        let newList = []
+        const newData = editedData.map((item) => {
+
             if (item.key === key) {
-                // Speichern Sie die Zeit als String im Format 'HH:mm' oder null, wenn kein Zeitwert ausgewählt ist
                 const timeString = time ? time.format('HH:mm') : null;
-                return {...item, [field]: timeString};
+                const decimalTime = timeString ? timeToDecimal(timeString) : null;
+                newList.push({...item, [field]: decimalTime});
+                return
             }
-            return item;
+
+            newList.push(item)
+
         });
-        setData(newData);
+        setEditedData(newList);
     };
 
 
@@ -167,24 +268,27 @@ const Goals = () => {
         cursor: 'not-allowed',
     };
 
-    const saveGoals = () => {
-        console.log({
-            data
-        });
+    const saveGoals = async () => {
+      setLoading(true)
+        try{
+          const response = await makeRequest('POST', USERGOALS, editedData);
+          setTimeout(function (){
+              setInitialData(editedData);
+              setLoading(false);
+          }, 1000);
+        } catch (error) {
+            console.log(error);
+        }
     };
+
     const hasChanges = () => {
-        return data.some((row, index) => {
-            const initialRow = initialData[index];
-            // Da TimePicker moment Objekte zurückgibt und die initialen Werte null sind,
-            // müssen wir die moment Objekte in ein vergleichbares Format umwandeln oder
-            // prüfen, ob sie existieren.
-            const workloadChanged = row.workload && (!initialRow.workload || !row.workload.isSame(initialRow.workload, 'minute'));
-            const endChanged = row.end && (!initialRow.end || !row.end.isSame(initialRow.end, 'minute'));
-            const breakTimeChanged = row.breakTime && (!initialRow.breakTime || !row.breakTime.isSame(initialRow.breakTime, 'minute'));
-            const distractionsChanged = row.distractions !== initialRow.distractions;
-            return workloadChanged || endChanged || breakTimeChanged || distractionsChanged;
+        return Object.keys(editedData).some(key => {
+            const editedItem = editedData[key];
+            const initialItem = initialData[key];
+            return Object.keys(editedItem).some(prop => editedItem[prop] !== initialItem[prop]);
         });
     };
+
 
     return (
         <Layout theme={theme} style={{backgroundColor: theme === 'dark' ? '#242424' : '#ffffff'}}>
@@ -221,12 +325,13 @@ const Goals = () => {
 
                 }}
             >
-                <Table className={'goals-table'} dataSource={data} columns={columns} pagination={false}/>
+                <Table className={'goals-table'} dataSource={editedData} columns={columns} pagination={false}/>
             </ConfigProvider>
             <Button
                 onClick={saveGoals}
                 type={'primary'}
                 disabled={!hasChanges()}
+                loading={loading}
                 style={hasChanges() ? enabledButtonStyle : disabledButtonStyle}>
                 Save
             </Button>

@@ -2,15 +2,18 @@ import React, {useEffect, useState} from 'react';
 import {Switch, Layout, Slider, Typography, Menu, Button, Select} from 'antd';
 import {makeRequest} from "../api/api.js";
 import {USERSETTINGS} from "../api/endpoints.js";
+import {useTheme} from "../context/ThemeContext.jsx";
 
 const {Title} = Typography;
 
 const Settings = () => {
-    const [theme, setTheme] = useState('light');
+    const {theme, toggleTheme} = useTheme();
     const [selectedHeaderItem, setSelectedHeaderItem] = useState(() => {
         const storedValue = sessionStorage.getItem('selectedHeaderItemSettings')
         return storedValue ? storedValue : 'settings';
     });
+    const [loading, setLoading] = useState(false);
+
     const [initialState, setInitialState] = useState({
         isNotificationsOn: null,
         appTheme: null,
@@ -77,27 +80,6 @@ const Settings = () => {
     }, []);
 
 
-    useEffect(() => {
-
-        sessionStorage.setItem('selectedHeaderItemSettings', selectedHeaderItem);
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        // Hilfsfunktion, um das Theme zu ändern
-        const handleChange = (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        };
-
-        // Event Listener hinzufügen
-        mediaQuery.addEventListener('change', handleChange);
-
-        // Setze das initiale Theme basierend auf der aktuellen Einstellung
-        handleChange(mediaQuery);
-
-        // Cleanup-Funktion, um den Event Listener zu entfernen
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
-
-
     // Prüfe, ob Änderungen vorgenommen wurden
     const hasChanges = () => {
         return Object.keys(editedData).some(key => editedData[key] !== initialState[key]);
@@ -105,7 +87,12 @@ const Settings = () => {
 
 
     const handleInputChange = (name, value) => {
-        console.log(name, value)
+        if (name === 'isNotificationsOn' && value) {
+            const permission = requestNotificationPermission();
+            if (!permission) {
+                return;
+            }
+        }
         setEditedData(prevState => ({
             ...prevState,
             [name]: value,
@@ -113,13 +100,42 @@ const Settings = () => {
     };
     // Funktion zum Speichern der Einstellungen
     const saveSettings = async () => {
-       try {
-           await makeRequest('POST', USERSETTINGS, editedData);
-       } catch (error) {
-              console.log(error);
-       }
+        setLoading(true);
+        try {
+            const response = await makeRequest('POST', USERSETTINGS, editedData);
+            setTimeout(function () {
+                if (response.message === 'new theme') {
+                    toggleTheme(editedData.appTheme);
+                }
+                setInitialState(editedData)
+                setLoading(false);
+            }, 1000);
+        } catch (error) {
+
+            console.log(error);
+        }
+
+
     };
 
+    // Funktion, um die Zustimmung für Benachrichtigungen zu erhalten
+    const requestNotificationPermission = async () => {
+        const permission = await Notification.requestPermission();
+        if (permission === "granted") {
+            sendTestNotification();
+            return true;
+        } else {
+            console.log("Notification permission denied");
+            return false;
+        }
+    };
+
+    // Funktion, um eine Testbenachrichtigung zu senden
+    const sendTestNotification = () => {
+        new Notification("Test Notification", {
+            body: "This is a test notification!",
+        });
+    };
 
     const headerItems = [
         {key: 'settings', label: 'Settings'},
@@ -127,7 +143,7 @@ const Settings = () => {
     ];
 
     const getTextStyle = () => ({
-        color: theme === 'dark' ? '#ffffff' : 'black',
+        color: theme === 'dark' ? '#ffffff' : null,
         marginBottom: '30px'
     });
 
@@ -144,7 +160,10 @@ const Settings = () => {
     };
 
     return (
-        <Layout theme={theme} style={{backgroundColor: theme === 'dark' ? '#242424' : '#ffffff'}}>
+        <Layout theme={theme} style={{
+            backgroundColor: theme === 'dark' ? '#242424' : '#ffffff',
+            transition: 'background-color 0.4s ease, color 0.4s ease',
+        }}>
             <Menu
                 mode="horizontal"
                 defaultSelectedKeys={['settings']}
@@ -152,8 +171,9 @@ const Settings = () => {
                 onClick={(e) => setSelectedHeaderItem(e.key)}
                 className={`custom-menu ${theme}-theme`} // Hier fügen Sie die themenspezifische Klasse hinzu
                 style={{
-                    margin: '30px 0 0 50px',
+                    margin: '30px 0 0 45px',
                     fontSize: '1.2rem',
+                    transition: 'background-color 0.4s ease, color 0.4s ease',
                     backgroundColor: theme === 'dark' ? '#242424' : '#ffffff',
                     borderBottom: 'none',
                     color: theme === 'dark' ? '#ffffff' : 'black',
@@ -164,12 +184,13 @@ const Settings = () => {
                 flexDirection: 'column',
                 justifyContent: 'flex-start',
                 textAlign: 'left',
-                margin: ' 50px 0 0 65px'
+                margin: ' 45px 0 0 65px'
             }}>
                 <Title level={4} style={getTextStyle()}>General</Title>
 
                 <div className={'general-wrapper'}
                      style={{
+                         ...getTextStyle(),
                          display: 'flex',
                          flexDirection: 'row',
                          gap: '30px',
@@ -189,10 +210,10 @@ const Settings = () => {
                         flexDirection: 'column',
                         gap: "30px",
                         marginLeft: 'auto',
-                        marginRight: '50px',
+                        marginRight: '45px',
                         width: '100px'
                     }}>
-                        <Switch style={{width: '55px', marginLeft: 'auto'}} checked={editedData.isNotificationsOn}
+                        <Switch style={{width: '45px', marginLeft: 'auto'}} checked={editedData.isNotificationsOn}
                                 onChange={e => handleInputChange('isNotificationsOn', e)}/>
                         <Select
                             style={{width: '100px'}}
@@ -213,6 +234,7 @@ const Settings = () => {
                         <Title level={4} style={getTextStyle()}>Notifications</Title>
                         <div className={'notifications-wrapper'}
                              style={{
+                                 ...getTextStyle(),
                                  display: 'flex',
                                  flexDirection: 'row',
                                  gap: '30px',
@@ -237,11 +259,11 @@ const Settings = () => {
                                 flexDirection: 'column',
                                 gap: "30px",
                                 marginLeft: 'auto',
-                                marginRight: '50px',
-                                width: '55px'
+                                marginRight: '45px',
+                                width: '45px'
                             }}>
                                 <Switch checked={editedData.isStandUpReminderOn}
-                                         onChange={e => handleInputChange('isStandUpReminderOn', e)}/>
+                                        onChange={e => handleInputChange('isStandUpReminderOn', e)}/>
                                 <Switch checked={editedData.isBreakReminderOn}
                                         onChange={e => handleInputChange('isBreakReminderOn', e)}/>
                                 <Switch checked={editedData.isStayProductiveReminderOn}
@@ -255,7 +277,13 @@ const Settings = () => {
                 )}
                 <Title level={4} style={getTextStyle()}>Tracking</Title>
                 <div className={'tracking-wrapper'}
-                     style={{display: 'flex', flexDirection: 'row', gap: '30px', marginBottom: '40px'}}>
+                     style={{
+                         ...getTextStyle(),
+                         display: 'flex',
+                         flexDirection: 'row',
+                         gap: '30px',
+                         marginBottom: '40px'
+                     }}>
                     <div style={{display: 'flex', flexDirection: 'column', gap: "30px"}}>
                         <div>
                             Track fatigue
@@ -275,20 +303,23 @@ const Settings = () => {
                         flexDirection: 'column',
                         gap: "30px",
                         marginLeft: 'auto',
-                        marginRight: '50px',
+                        marginRight: '45px',
 
                     }}>
-                        <Switch checked={editedData.isTrackFatigueOn} onChange={e => handleInputChange('isTrackFatigueOn', e)}
-                                style={{width: '55px', marginLeft: 'auto'}}/>
-                        <Switch checked={editedData.isTrackOtherPeopleOn} onChange={e => handleInputChange('isTrackOtherPeopleOn', e)}
-                                style={{width: '55px', marginLeft: 'auto'}}/>
-                        <Switch checked={editedData.isTrackSmartphoneOn} onChange={e => handleInputChange('isTrackSmartphoneOn', e)}
-                                style={{width: '55px', marginLeft: 'auto'}}/>
+                        <Switch checked={editedData.isTrackFatigueOn}
+                                onChange={e => handleInputChange('isTrackFatigueOn', e)}
+                                style={{width: '45px', marginLeft: 'auto'}}/>
+                        <Switch checked={editedData.isTrackOtherPeopleOn}
+                                onChange={e => handleInputChange('isTrackOtherPeopleOn', e)}
+                                style={{width: '45px', marginLeft: 'auto'}}/>
+                        <Switch checked={editedData.isTrackSmartphoneOn}
+                                onChange={e => handleInputChange('isTrackSmartphoneOn', e)}
+                                style={{width: '45px', marginLeft: 'auto'}}/>
                         <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', width: '300px'}}>
                             <Slider
                                 className={theme === 'dark' ? 'dark-theme-slider' : "light-theme-slider"}
                                 value={editedData.trackingGrade}
-                               onChange={e => handleInputChange('trackingGrade', e)}
+                                onChange={e => handleInputChange('trackingGrade', e)}
                                 min={0}
                                 max={1}
                                 step={0.1}
@@ -308,6 +339,7 @@ const Settings = () => {
                     onClick={saveSettings}
                     type={'primary'}
                     disabled={!hasChanges()}
+                    loading={loading}
                     style={hasChanges() ? enabledButtonStyle : disabledButtonStyle}>
                     Save
                 </Button>

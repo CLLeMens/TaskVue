@@ -13,6 +13,7 @@ import locale from "antd/es/locale/en_GB";
 import dayjs from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import Home from "./Home.jsx";
+import {useTheme} from "../context/ThemeContext.jsx";
 
 dayjs.extend(updateLocale)
 dayjs.updateLocale('en', {
@@ -23,41 +24,19 @@ const {Header, Content} = Layout;
 
 
 const Dashboard = () => {
-    const [theme, setTheme] = useState('light');
-
+    const {theme, toggleTheme} = useTheme();
     const currentWeek = dayjs().week();
-
-
 
     const [selectedHeaderItem, setSelectedHeaderItem] = useState(() => {
         const storedValue = sessionStorage.getItem('selectedHeaderItem')
         return storedValue ? storedValue : 'home';
     });
 
-
-    useEffect(() => {
-
-        sessionStorage.setItem('selectedHeaderItem', selectedHeaderItem);
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        const handleChange = (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        };
-
-        mediaQuery.addEventListener('change', handleChange);
-
-        handleChange(mediaQuery);
-
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, [selectedHeaderItem]);
-
-
     const headerItems = [
-        {key: 'home', icon: <HomeOutlined />, label: 'Home'},
+        {key: 'home', icon: <HomeOutlined/>, label: 'Home'},
         {key: 'history', icon: <HistoryOutlined/>, label: 'History'},
         {key: 'productivity', icon: <RiseOutlined/>, label: 'Productivity'},
     ];
-
 
     let content;
     switch (selectedHeaderItem) {

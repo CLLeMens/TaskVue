@@ -4,33 +4,19 @@ import {Bar} from "react-chartjs-2";
 import dayjs from "dayjs";
 import {ConfigProvider, DatePicker, Typography} from "antd";
 import locale from "antd/es/locale/en_GB";
+import {useTheme} from "../context/ThemeContext.jsx";
 
 const {Title} = Typography;
 
 
 const Productivity = ({week}) => {
-    const [theme, setTheme] = useState('light');
+    const {theme, toggleTheme} = useTheme();
 
     const [currentDate, setCurrentDate] = useState(moment());
     const [defaultDates, setDefaultDates] = useState(week);
     const startDay = currentDate.clone().startOf('month').startOf('week');
     const endDay = currentDate.clone().endOf('month').endOf('week').add(1, 'day');
     const currentWeek = dayjs().week();
-
-    useEffect(() => {
-
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        const handleChange = (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        };
-
-        mediaQuery.addEventListener('change', handleChange);
-
-        handleChange(mediaQuery);
-
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
 
     const getTextStyle = () => ({
         color: theme === 'dark' ? '#ffffff' : 'black',

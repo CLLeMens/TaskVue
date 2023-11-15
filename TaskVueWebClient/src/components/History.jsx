@@ -3,6 +3,7 @@ import React, {useEffect, useState} from "react";
 import dayjs from "dayjs";
 import {Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title as TitleJS, Tooltip, Legend} from 'chart.js';
 import locale from "antd/es/locale/en_GB";
+import {useTheme} from "../context/ThemeContext.jsx";
 
 const {Title} = Typography;
 
@@ -17,7 +18,7 @@ ChartJS.register(
 
 
 const History = ({week}) => {
-    const [theme, setTheme] = useState('light');
+    const {theme, toggleTheme} = useTheme();
     const [defaultDates, setDefaultDates] = useState(week);
     const currentWeek = dayjs().week();
 
@@ -26,21 +27,6 @@ const History = ({week}) => {
     useEffect(() => {
         setDefaultDates(week);
     }, [week]);
-
-
-    useEffect(() => {
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-        const handleChange = (e) => {
-            setTheme(e.matches ? 'dark' : 'light');
-        };
-
-        mediaQuery.addEventListener('change', handleChange);
-
-        handleChange(mediaQuery);
-
-        return () => mediaQuery.removeEventListener('change', handleChange);
-    }, []);
 
 
     // Statische Daten für die Wochentage und deren Status

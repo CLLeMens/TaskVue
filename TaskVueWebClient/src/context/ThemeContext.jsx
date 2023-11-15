@@ -11,8 +11,6 @@ export const ThemeProvider = ({ children }) => {
     };
 
     // Initialer Theme-State
-    console.log(getSystemTheme())
-    console.log(localStorage.getItem('theme'))
     const [theme, setTheme] = useState(localStorage.getItem('theme') || getSystemTheme());
 
     useEffect(() => {

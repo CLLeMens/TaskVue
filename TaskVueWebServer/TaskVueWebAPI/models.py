@@ -11,6 +11,7 @@ class UserSettings(models.Model):
     track_fatigue = models.BooleanField(default=False)
     track_other_people = models.BooleanField(default=False)
     track_smartphone = models.BooleanField(default=False)
+    track_key_mouse = models.BooleanField(default=False)
     tracking_grade = models.FloatField(default=0.7)
 
 

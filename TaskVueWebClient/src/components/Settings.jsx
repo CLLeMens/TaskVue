@@ -24,6 +24,7 @@ const Settings = () => {
         isBreakReminderOn: null,
         isStayProductiveReminderOn: null,
         isPositiveFeedbackOn: null,
+        isTrackKeyMouseOn: null,
         trackingGrade: null,
     });
 
@@ -37,6 +38,7 @@ const Settings = () => {
         isBreakReminderOn: null,
         isStayProductiveReminderOn: null,
         isPositiveFeedbackOn: null,
+        isTrackKeyMouseOn: null,
         trackingGrade: null,
     });
 
@@ -55,6 +57,7 @@ const Settings = () => {
                     isBreakReminderOn: response.break_reminder,
                     isStayProductiveReminderOn: response.productivity_reminder,
                     isPositiveFeedbackOn: response.positive_feedback_reminder,
+                    isTrackKeyMouseOn: response.track_key_mouse,
                     trackingGrade: response.tracking_grade,
                 });
 
@@ -68,6 +71,7 @@ const Settings = () => {
                     isBreakReminderOn: response.break_reminder,
                     isStayProductiveReminderOn: response.productivity_reminder,
                     isPositiveFeedbackOn: response.positive_feedback_reminder,
+                    isTrackKeyMouseOn: response.track_key_mouse,
                     trackingGrade: response.tracking_grade,
                 });
 
@@ -295,6 +299,9 @@ const Settings = () => {
                             Track Smartphone
                         </div>
                         <div>
+                            Track keystrokes and mouse movement
+                        </div>
+                        <div>
                             Tracking grade
                         </div>
                     </div>
@@ -314,6 +321,9 @@ const Settings = () => {
                                 style={{width: '45px', marginLeft: 'auto'}}/>
                         <Switch checked={editedData.isTrackSmartphoneOn}
                                 onChange={e => handleInputChange('isTrackSmartphoneOn', e)}
+                                style={{width: '45px', marginLeft: 'auto'}}/>
+                         <Switch checked={editedData.isTrackKeyMouseOn}
+                                onChange={e => handleInputChange('isTrackKeyMouseOn', e)}
                                 style={{width: '45px', marginLeft: 'auto'}}/>
                         <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', width: '300px'}}>
                             <Slider

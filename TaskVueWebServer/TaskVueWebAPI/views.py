@@ -4,7 +4,7 @@ from .models import UserSettings, UserGoals
 from rest_framework import status
 from rest_framework.response import Response
 from .utils import UserSettingsSerializer, UserGoalsSerializer
-
+import datetime
 
 class GetThemeView(APIView):
     def get(self, request):
@@ -14,6 +14,39 @@ class GetThemeView(APIView):
             return Response({'theme': theme}, status=status.HTTP_200_OK)
         except UserSettings.DoesNotExist:
             return Response({'theme': 'system'}, status=status.HTTP_200_OK)
+
+
+class GetHomeInformationView(APIView):
+    def get(self, request):
+        settings = []
+        goals = []
+        try:
+            user_settings = UserSettings.objects.get()
+            fatigue = user_settings.track_fatigue
+            other_people = user_settings.track_other_people
+            smartphone = user_settings.track_smartphone
+            key_mouse = user_settings.track_key_mouse
+
+            distraction = other_people or smartphone
+
+            settings.append({'fatigue': fatigue, 'distraction': distraction, 'key_mouse': key_mouse})
+
+
+        except UserSettings.DoesNotExist:
+            settings.append({'fatigue': None, 'distraction': None, 'key_mouse': None})
+        try:
+            user_goals = UserGoals.objects.get()
+            today = datetime.datetime.now().strftime("%A")
+            workload = getattr(user_goals, f'{today.lower()}_workload')
+            breaks = getattr(user_goals, f'{today.lower()}_breaks')
+            distractions = getattr(user_goals, f'{today.lower()}_distractions')
+
+            goals.append({'workload': workload, 'breaks': breaks, 'distractions': distractions})
+
+        except UserGoals.DoesNotExist:
+            goals.append({'workload': None, 'breaks': None, 'distractions': None})
+        return Response({'settings': settings, 'goals': goals}, status=status.HTTP_200_OK)
+
 
 
 # Create your views here.
@@ -35,6 +68,7 @@ class UserSettingsView(APIView):
                 'track_fatigue': False,
                 'track_other_people': False,
                 'track_smartphone': False,
+                'track_key_mouse': False,
                 'tracking_grade': 0.7
 
             }
@@ -52,6 +86,7 @@ class UserSettingsView(APIView):
         track_fatigue = request.data.get('isTrackFatigueOn')
         track_other_people = request.data.get('isTrackOtherPeopleOn')
         track_smartphone = request.data.get('isTrackSmartphoneOn')
+        track_key_mouse = request.data.get('isTrackKeyMouseOn')
         tracking_grade = request.data.get('trackingGrade')
 
         # try to get the settings
@@ -72,6 +107,7 @@ class UserSettingsView(APIView):
         settings.track_fatigue = track_fatigue
         settings.track_other_people = track_other_people
         settings.track_smartphone = track_smartphone
+        settings.track_key_mouse = track_key_mouse
         settings.tracking_grade = tracking_grade
 
         # check if settings.theme is equal to theme

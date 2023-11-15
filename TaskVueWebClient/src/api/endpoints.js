@@ -6,3 +6,5 @@ export const USERSETTINGS = BASE_URL + "user-settings/"
 
 export const USERGOALS = BASE_URL + "user-goals/"
 
+export const GETHOMEINFO = BASE_URL + "get-home-data/"
+

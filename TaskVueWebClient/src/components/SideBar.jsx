@@ -13,8 +13,8 @@ const {Title, Paragraph, Text} = Typography;
 
 
 const SideBar = ({onMenuSelect, selectedItem}) => {
-    const { theme, toggleTheme } = useTheme();
-
+    const {theme, toggleTheme} = useTheme();
+    const [today, setToday] = useState(null);
 
     const iconStyle = {fontSize: '18px'}; // Definieren Sie einen gemeinsamen Stil für alle Icons
 
@@ -24,17 +24,42 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         {key: 'settings', icon: <SettingOutlined style={iconStyle}/>, label: 'Settings'},
     ];
 
-    // Beispieldaten für Ereignisse
-    const events = [
-        {time: '08:00 - 08:30', title: 'Distraction', color: 'rgba(240, 128, 128, 0.8)'},
-        {time: '08:30 - 12:00', title: 'Work', color: 'rgba(126,211,127,0.80)'},
-        {time: '12:00 - 12:30', title: 'Break', color: 'rgba(85, 100, 255, 0.8)'},
-        {time: '12:30 - 14:00', title: 'Work', color: 'rgba(126,211,127,0.80)'},
-        {time: '14:00 - 14:10', title: 'Distraction', color: 'rgba(240, 128, 128, 0.8)'},
-        {time: '14:10 - 15:30', title: 'Work', color: 'rgba(126,211,127,0.80)'},
-        {time: '15:30 - 16:00', title: 'Distraction', color: 'rgba(240, 128, 128, 0.8)'},
+    function formatTime(timeString) {
+        return timeString.substring(0, 5);
+    }
 
-    ];
+    function calculatePeriods(data) {
+        let periods = [];
+        let lastTime = null;
+        let lastProcess = null;
+
+        data.forEach(item => {
+            if (lastTime) {
+                let periodType = lastProcess === 'start' ? 'Work' : 'Break';
+                let color = periodType === 'Work' ? 'rgba(126,211,127,0.80)' : 'rgba(85, 100, 255, 0.8)';
+                periods.push({
+                    time: `${formatTime(lastTime)} - ${formatTime(item.time)}`,
+                    title: periodType,
+                    color: color
+                });
+            }
+            lastTime = item.time;
+            lastProcess = item.process;
+        });
+
+        return periods;
+    }
+
+    useEffect(() => {
+        // check if localstorage processFlow exists
+        if (localStorage.getItem('processFlow')) {
+            // if so setToday to this value
+            setToday(localStorage.getItem('processFlow'));
+        }
+        const periods = calculatePeriods(JSON.parse(localStorage.getItem('processFlow')));
+        setToday(periods)
+
+    }, [])
 
 
     return (
@@ -92,7 +117,7 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
                             letterSpacing: '.1rem'
                         }}>TODAY</Paragraph>
                         <div className="custom-events">
-                            {events.map((event, index) => (
+                            {today && today.map((event, index) => (
                                 <div key={index} className="event-item" style={{position: 'relative'}}>
                                     {/* Farbe wird nun über CSS gesetzt */}
                                     <span className="event-dot" style={{backgroundColor: event.color}}></span>

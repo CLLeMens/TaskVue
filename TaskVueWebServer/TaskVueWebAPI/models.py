@@ -1,4 +1,6 @@
 from django.db import models
+import json
+
 
 # Create your models here.
 class UserSettings(models.Model):
@@ -39,3 +41,14 @@ class UserGoals(models.Model):
     friday_distractions = models.FloatField(null=True)
     saturday_distractions = models.FloatField(null=True)
     sunday_distractions = models.FloatField(null=True)
+
+
+class ProcessFlow(models.Model):
+    date = models.DateField()
+    process_flow = models.TextField()
+
+    def set_data(self, data):
+        self.process_flow = json.dumps(data)
+
+    def get_data(self):
+        return json.loads(self.process_flow)

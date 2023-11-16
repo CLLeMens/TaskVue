@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from .models import UserSettings, UserGoals
+from .models import UserSettings, UserGoals, ProcessFlow
 from rest_framework import status
 from rest_framework.response import Response
 from .utils import UserSettingsSerializer, UserGoalsSerializer
@@ -47,6 +47,23 @@ class GetHomeInformationView(APIView):
             goals.append({'workload': None, 'breaks': None, 'distractions': None})
         return Response({'settings': settings, 'goals': goals}, status=status.HTTP_200_OK)
 
+
+
+class ProcessFlowView(APIView):
+    def post(self, request):
+        print(request.data)
+        # todays date
+        today_date = datetime.date.today()
+
+        process_flow_data = request.data
+        print(process_flow_data)
+
+        process_flow, created = ProcessFlow.objects.update_or_create(
+            date=today_date,
+            defaults={'process_flow': process_flow_data}
+        )
+
+        return Response({'message': 'success'}, status=status.HTTP_200_OK)
 
 
 # Create your views here.

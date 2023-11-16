@@ -3,7 +3,7 @@ import {Layout, Button, Card, Tag, Modal, Divider, Typography} from 'antd';
 import {InfoCircleTwoTone} from '@ant-design/icons';
 import {useTheme} from "../context/ThemeContext.jsx";
 import {makeRequest} from "../api/api.js";
-import {GETHOMEINFO} from "../api/endpoints.js";
+import {GETHOMEINFO, PROCESSFLOW} from "../api/endpoints.js";
 
 const {Title} = Typography;
 
@@ -100,6 +100,16 @@ const Home = () => {
         setStartTime(null);
 
         processFlow('stop');
+
+        const fetchData = async () => {
+            try{
+                await makeRequest('POST', PROCESSFLOW, JSON.parse(localStorage.getItem('processFlow')));
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        fetchData();
+
     };
 
     const toggleTimer = (process) => {

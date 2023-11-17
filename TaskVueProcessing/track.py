@@ -5,12 +5,20 @@ from ultralytics import YOLO
 
 
 class ObjectDetector:
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(ObjectDetector, cls).__new__(cls)
+        return cls._instance
     def __init__(self, detect_phones=True, detect_persons=True):
-        self.detect_phones = detect_phones
-        self.detect_persons = detect_persons
-        self.last_detection_time = None
-        self.group = []
-        self.file = None
+        if not hasattr(self, '_initialized'):  # Avoid reinitialization
+            self.detect_phones = detect_phones  #Toggle for phone detection
+            self.detect_persons = detect_persons    #Toggle for person detection
+            self.last_detection_time = None #Time of last detection
+            self.group = [] #Group of detections (for mobile detection in json)
+            self.file = None    #File to write detections to
+            self._initialized = True
+            self.model = YOLO('yolov8s.pt')
 
     def cleanup(self):
         with open("detected_objects.json", "r") as file:
@@ -62,14 +70,13 @@ class ObjectDetector:
                     self.person_detection(detection_boxes)
 
     def run_detection_loop(self):
-        model = YOLO('yolov8m.pt')
         cap = cv2.VideoCapture(0)
         with open("detected_objects.json", "w+") as self.file:
             self.file.write("[\n")
             while cap.isOpened():
                 success, frame = cap.read()
                 if success:
-                    results = model(frame)
+                    results = self.model(frame)
                     self.compute_detections(results, frame)
                     annotated_frame = results[0].plot()
                     cv2.imshow("YOLOv8 Inference", annotated_frame)
@@ -88,7 +95,17 @@ class ObjectDetector:
             self._write_group_to_file(datetime.datetime.now())
         self.file.write("]\n")
 
+    @classmethod
+    def get_instance(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = ObjectDetector(*args, **kwargs)
+        return cls._instance
 
 # Usage
-detector = ObjectDetector(detect_phones=True, detect_persons=True)
+
+# Usage
+# This will always return the same instance of ObjectDetector
+detector = ObjectDetector.get_instance(detect_phones=True, detect_persons=True)
+
+#detector = ObjectDetector(detect_phones=True, detect_persons=True)
 detector.run_detection_loop()

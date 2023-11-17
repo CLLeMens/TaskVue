@@ -7,6 +7,8 @@ import {
     SettingOutlined,
 } from '@ant-design/icons';
 import {useTheme} from "../context/ThemeContext.jsx";
+import {makeRequest} from "../api/api.js";
+import {PROCESSFLOW} from "../api/endpoints.js";
 
 const {Sider} = Layout;
 const {Title, Paragraph, Text} = Typography;
@@ -52,12 +54,22 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
 
     useEffect(() => {
         // check if localstorage processFlow exists
-        if (localStorage.getItem('processFlow')) {
-            // if so setToday to this value
-            setToday(localStorage.getItem('processFlow'));
+        const fetchData = async () => {
+            try {
+                const response = await makeRequest('GET', PROCESSFLOW)
+
+
+                // check if response is empty object
+                if (Object.keys(response).length !== 0) {
+                    const periods = calculatePeriods(response);
+                    setToday(periods);
+                }
+
+            } catch (e) {
+                console.log(e);
+            }
         }
-        const periods = calculatePeriods(JSON.parse(localStorage.getItem('processFlow')));
-        setToday(periods)
+        fetchData();
 
     }, [])
 

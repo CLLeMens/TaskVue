@@ -1,10 +1,12 @@
-from django.shortcuts import render
+import json
 from rest_framework.views import APIView
 from .models import UserSettings, UserGoals, ProcessFlow
 from rest_framework import status
 from rest_framework.response import Response
 from .utils import UserSettingsSerializer, UserGoalsSerializer
 import datetime
+from isoweek import Week
+
 
 class GetThemeView(APIView):
     def get(self, request):
@@ -41,22 +43,33 @@ class GetHomeInformationView(APIView):
             breaks = getattr(user_goals, f'{today.lower()}_breaks')
             distractions = getattr(user_goals, f'{today.lower()}_distractions')
 
-            goals.append({'workload': workload, 'breaks': breaks, 'distractions': distractions})
+            goals.append({'workload': round(workload, 2), 'breaks': round(breaks, 2), 'distractions': round(distractions, 2)})
 
         except UserGoals.DoesNotExist:
             goals.append({'workload': None, 'breaks': None, 'distractions': None})
         return Response({'settings': settings, 'goals': goals}, status=status.HTTP_200_OK)
 
 
-
 class ProcessFlowView(APIView):
+    def get(self, request):
+        # todays date
+        today_date = datetime.date.today()
+
+        try:
+            process_flow = ProcessFlow.objects.get(date=today_date).get_data()
+            corrected_process_flow = process_flow.replace("'", '"')
+            process_flow_data = json.loads(corrected_process_flow)
+
+            return Response(process_flow_data, status=status.HTTP_200_OK)
+        except ProcessFlow.DoesNotExist:
+            return Response({}, status=status.HTTP_200_OK)
+
     def post(self, request):
-        print(request.data)
+
         # todays date
         today_date = datetime.date.today()
 
         process_flow_data = request.data
-        print(process_flow_data)
 
         process_flow, created = ProcessFlow.objects.update_or_create(
             date=today_date,
@@ -64,6 +77,63 @@ class ProcessFlowView(APIView):
         )
 
         return Response({'message': 'success'}, status=status.HTTP_200_OK)
+
+
+def calculate_work_and_break_time(data):
+    work_time = 0
+    break_time = 0
+    last_time = None
+    last_process = None
+
+    for entry in data:
+        current_time = datetime.datetime.strptime(entry['time'], '%H:%M:%S').time()
+        if last_time is not None:
+            time_diff = datetime.datetime.combine(datetime.date.today(), current_time) - datetime.datetime.combine(
+                datetime.date.today(), last_time)
+            seconds = time_diff.total_seconds()
+
+            # Arbeitszeit zwischen 'start' und 'pause' oder 'stop'
+            if last_process == 'start' and entry['process'] in ['pause', 'stop']:
+                work_time += seconds
+            # Pausenzeit zwischen 'pause' oder 'stop' und 'start'
+            elif last_process in ['pause', 'stop'] and entry['process'] == 'start':
+                break_time += seconds
+
+        last_time = current_time
+        last_process = entry['process']
+
+    work_time_hours = round(work_time / 3600, 2)  # Umrechnung in Stunden
+    break_time_hours = round(break_time / 3600, 2)  # Umrechnung in Stunden
+    return {'work': work_time_hours, 'break': break_time_hours}
+
+
+class ProcessFlowWeekView(APIView):
+    def get(self, request):
+        year_week = request.GET.get('date', '')  # Standardwert ist ein leerer String
+        year, week = map(int, year_week.split('-'))
+
+        monday = Week(year, week).monday()
+
+
+        process_flows_list = []
+
+        for i in range(7):
+            day = monday + datetime.timedelta(days=i)
+            process_flows = ProcessFlow.objects.filter(date=day)
+
+            if process_flows.exists():
+                for process_flow in process_flows:
+                    process_flow_data = process_flow.get_data()
+                    corrected_process_flow = process_flow_data.replace("'", '"')
+                    process_flow_data = json.loads(corrected_process_flow)
+
+                    # Berechnen Sie Arbeits- und Pausenzeiten
+                    work_break_data = calculate_work_and_break_time(process_flow_data)
+                    process_flows_list.append(work_break_data)
+            else:
+                process_flows_list.append({'work': 0, 'break': 0})
+        print(process_flows_list)
+        return Response(process_flows_list, status=status.HTTP_200_OK)
 
 
 # Create your views here.
@@ -270,7 +340,6 @@ class UserGoalsView(APIView):
                 request.data[4]['day'] != 'Friday' or
                 request.data[5]['day'] != 'Saturday' or
                 request.data[6]['day'] != 'Sunday'):
-
             return Response({'message': 'invalid data'}, status=status.HTTP_400_BAD_REQUEST)
 
         # try to get the goals

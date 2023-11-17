@@ -8,9 +8,13 @@ async function makeRequest(method, endpoint, data = {} = false) {
         headers: headers,
     };
 
-    if (method !== 'GET') {
+    if (method === 'GET' && Object.keys(data).length !== 0) {
+        const queryParams = new URLSearchParams(data).toString();
+        endpoint += '?' + queryParams;
+    } else if (method !== 'GET') {
         fetchOptions.body = JSON.stringify(data);
     }
+
 
     const response = await fetch(endpoint, fetchOptions);
 
@@ -27,4 +31,4 @@ async function makeRequest(method, endpoint, data = {} = false) {
 }
 
 
-export { makeRequest };
+export {makeRequest};

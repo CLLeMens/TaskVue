@@ -26,11 +26,15 @@ const {Header, Content} = Layout;
 const Dashboard = () => {
     const {theme, toggleTheme} = useTheme();
     const currentWeek = dayjs().week();
-
     const [selectedHeaderItem, setSelectedHeaderItem] = useState(() => {
         const storedValue = sessionStorage.getItem('selectedHeaderItem')
         return storedValue ? storedValue : 'home';
     });
+
+    useEffect(() => {
+        sessionStorage.setItem('selectedHeaderItem', selectedHeaderItem);
+    }, [selectedHeaderItem]);
+
 
     const headerItems = [
         {key: 'home', icon: <HomeOutlined/>, label: 'Home'},

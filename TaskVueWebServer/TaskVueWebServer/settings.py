@@ -69,7 +69,7 @@ TEMPLATES = [
         },
     },
 ]
-ASGI_APPLICATION = "TaskVueWebServer.TaskVueWebServer.asgi:application"
+ASGI_APPLICATION = "TaskVueWebServer.asgi.application"
 WSGI_APPLICATION = 'TaskVueWebServer.wsgi.application'
 
 # Database

@@ -19,6 +19,53 @@ const Home = () => {
     const [workedTime, setWorkedTime] = useState(0);
     const [pauseDuration, setPauseDuration] = useState(0);
     const [breakTime, setBreakTime] = useState(0);
+    const [processFlowState, setProcessFlowState] = useState([]);
+    const [workBreakTimes, setWorkBreakTimes] = useState(null);
+
+    useEffect(() => {
+    const interval = setInterval(() => {
+        const storedProcessFlow = localStorage.getItem('processFlow');
+        if (storedProcessFlow) {
+            const parsedData = JSON.parse(storedProcessFlow);
+            setProcessFlowState(parsedData);
+        }
+    }, 500);
+
+    return () => clearInterval(interval);
+}, []);
+
+
+    useEffect(() => {
+        setWorkBreakTimes(calculateWorkAndBreakTime(processFlowState));
+    }, [processFlowState]); // Hören auf Änderungen im processFlowState
+
+
+    useEffect(() => {
+        // Ziel-Uhrzeit setzen (z.B. 15:00 Uhr)
+        const targetHour = 0;
+        const targetMinute = 0;
+
+        // Aktuelles Datum und Zeit ermitteln
+        const now = new Date();
+        const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), targetHour, targetMinute);
+
+        // Wenn die Zielzeit heute bereits vergangen ist, setzen Sie sie für morgen
+        if (targetTime < now) {
+            targetTime.setDate(targetTime.getDate() + 1);
+        }
+
+        // Berechnen, wie lange gewartet werden muss (in Millisekunden)
+        const timeout = targetTime.getTime() - now.getTime();
+
+        // Timeout einstellen, um die Funktion zur festgelegten Zeit auszuführen
+        const timer = setTimeout(() => {
+            localStorage.removeItem('processFlow');
+            // Hier können Sie weitere Aktionen ausführen
+        }, timeout);
+
+        // Bereinigungsfunktion, um den Timer zu löschen, falls die Komponente unmountet wird
+        return () => clearTimeout(timer);
+    }, []);
 
 
     useEffect(() => {
@@ -51,6 +98,7 @@ const Home = () => {
         const fetchData = async () => {
             try {
                 const response = await makeRequest('GET', GETHOMEINFO);
+                console.log(response)
                 setInformation(response)
             } catch (error) {
                 console.log(error);
@@ -102,7 +150,7 @@ const Home = () => {
         processFlow('stop');
 
         const fetchData = async () => {
-            try{
+            try {
                 await makeRequest('POST', PROCESSFLOW, JSON.parse(localStorage.getItem('processFlow')));
             } catch (error) {
                 console.log(error);
@@ -210,6 +258,42 @@ const Home = () => {
     const getFontColor = () => ({
         color: theme === 'dark' ? '#ffffff' : null,
     })
+
+
+    function calculateWorkAndBreakTime() {
+        const dataString = localStorage.getItem('processFlow');
+        if (!dataString) {
+            return {work: 0, break: 0};
+        }
+
+        const data = JSON.parse(dataString);
+        let workTime = 0;
+        let breakTime = 0;
+        let lastTime = null;
+        let lastProcess = null;
+
+        data.forEach(entry => {
+            const currentDateTime = new Date(`01/01/2000 ${entry.time}`);
+            if (lastTime) {
+                const seconds = (currentDateTime - lastTime) / 1000;
+
+                if (lastProcess === 'start' && ['pause', 'stop'].includes(entry.process)) {
+                    workTime += seconds;
+                } else if (['pause', 'stop'].includes(lastProcess) && entry.process === 'start') {
+                    breakTime += seconds;
+                }
+            }
+
+            lastTime = currentDateTime;
+            lastProcess = entry.process;
+        });
+
+        const workTimeHours = Math.round(workTime / 3600 * 100) / 100;
+        const breakTimeHours = Math.round(breakTime / 3600 * 100) / 100;
+
+        return {work: workTimeHours, break: breakTimeHours};
+    }
+
 
     return (
 
@@ -335,8 +419,10 @@ const Home = () => {
                                 flexDirection: 'column',
                                 gap: '20px'
                             }}>
-                                <li>{(timer / 3600).toFixed(2)}h / {information && information.goals[0].workload}h</li>
-                                <li>{(pauseDuration / 3600).toFixed(2)}h
+                                <li>{workBreakTimes && parseFloat(workBreakTimes.work) + parseFloat((timer / 3600).toFixed(2))}h
+                                    / {information && information.goals[0].workload}h
+                                </li>
+                                <li>{workBreakTimes && parseFloat(workBreakTimes.break) + parseFloat((pauseDuration / 3600).toFixed(2))}h
                                     / {information && information.goals[0].breaks}h
                                 </li>
                                 <li>1.2h / {information && information.goals[0].distractions}h</li>

@@ -9,3 +9,5 @@ export const USERGOALS = BASE_URL + "user-goals/"
 export const GETHOMEINFO = BASE_URL + "get-home-data/"
 
 export const PROCESSFLOW = BASE_URL + "process-flow/"
+
+export const PROCESSFLOW_WEEK = BASE_URL + "process-flow-week/"

@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 import {ConfigProvider, DatePicker, Typography} from "antd";
 import locale from "antd/es/locale/en_GB";
 import {useTheme} from "../context/ThemeContext.jsx";
+import {makeRequest} from "../api/api.js";
+import {PROCESSFLOW_WEEK} from "../api/endpoints.js";
 
 const {Title} = Typography;
 
@@ -13,10 +15,49 @@ const Productivity = ({week}) => {
     const {theme, toggleTheme} = useTheme();
 
     const [currentDate, setCurrentDate] = useState(moment());
-    const [defaultDates, setDefaultDates] = useState(week);
+
     const startDay = currentDate.clone().startOf('month').startOf('week');
     const endDay = currentDate.clone().endOf('month').endOf('week').add(1, 'day');
     const currentWeek = dayjs().week();
+    const [weekStatistics, setWeekStatistics] = useState([]);
+
+
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const year = currentDate.year();
+
+                const weekNumber = currentDate.week();
+
+                const formattedWeek = `${year}-${weekNumber.toString().padStart(2, '0')}`;
+
+                const response = await makeRequest('GET', PROCESSFLOW_WEEK, {'date': formattedWeek});
+                setWeekStatistics(response);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+        fetchData();
+    }, [])
+
+    const handleWeekChange = async (date) => {
+        if (date) {
+            const year = date.year();
+            const weekNumber = date.week() - 1;
+            const formattedWeek = `${year}-${weekNumber.toString().padStart(2, '0')}`;
+            console.log(year, weekNumber)
+
+            try {
+                const response = await makeRequest('GET', PROCESSFLOW_WEEK, {'date': formattedWeek});
+                setWeekStatistics(response);
+            } catch (error) {
+                console.log(error);
+            }
+
+        }
+    };
+
 
     const getTextStyle = () => ({
         color: theme === 'dark' ? '#ffffff' : 'black',
@@ -103,21 +144,21 @@ const Productivity = ({week}) => {
         datasets: [
             {
                 label: 'Work',
-                data: [5, 6, 7, 8, 5, 4, 3], // Beispielwerte für Arbeitszeit
+                data: weekStatistics.map(day => day.work),
                 backgroundColor: 'rgba(126,211,127,0.80)',
                 borderRadius: 4,
 
             },
             {
                 label: 'Distractions',
-                data: [1, 2, 1, 3, 2, 1, 2], // Beispielwerte für Ablenkungen
+                data: [0.1, 0.2, 0.1, 0.3, 0.2, 0.1, 0.2], // Beispielwerte für Ablenkungen
                 backgroundColor: 'rgba(240, 128, 128, 0.8)',
                 borderRadius: 4,
 
             },
             {
                 label: 'Breaks',
-                data: [2, 1, 2, 1, 2, 3, 2], // Beispielwerte für Pausen
+                data: weekStatistics.map(day => day.break),
                 backgroundColor: 'rgba(85, 100, 255, 0.8)',
                 borderRadius: 4,
             },
@@ -176,7 +217,7 @@ const Productivity = ({week}) => {
                         <ConfigProvider locale={locale}>
                             <DatePicker
                                 placeholder="Select week"
-                                onChange={e => setDefaultDates(dayjs(e).week())}
+                                onChange={handleWeekChange}
                                 picker="week"
 
                                 style={{marginLeft: '23px', marginRight: 'auto'}}

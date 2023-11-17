@@ -51,4 +51,4 @@ class ProcessFlow(models.Model):
         self.process_flow = json.dumps(data)
 
     def get_data(self):
-        return json.loads(self.process_flow)
+        return self.process_flow

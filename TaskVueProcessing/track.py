@@ -8,6 +8,14 @@ detectPhones = True
 detectPersons = True
 ###########################Detection Vars#####################################
 
+def setDetectPhones(value):
+    global detectPhones
+    detectPhones = value
+
+def setDetectPersons(value):
+    global detectPersons
+    detectPersons = value
+
 def cleanup():
     with open("detected_objects.json", "r") as file:
         content = file.read()

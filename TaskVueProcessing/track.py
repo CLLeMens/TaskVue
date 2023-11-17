@@ -3,6 +3,11 @@ import json
 import cv2
 from ultralytics import YOLO
 
+###########################Detection Vars#####################################
+detectPhones = True
+detectPersons = True
+###########################Detection Vars#####################################
+
 def cleanup():
     with open("detected_objects.json", "r") as file:
         content = file.read()
@@ -10,7 +15,43 @@ def cleanup():
     if last_comma_index != -1:
         content = content[:last_comma_index] + content[last_comma_index + 1:]
     with open('detected_objects.json', 'w') as file:
-            file.write(content)
+        file.write(content)
+
+
+def phoneDetection(detectionBoxes):
+    global group_duration, group_event, json_output, group, last_detection_time
+    if "cell phone" in detectionBoxes:
+        current_time = datetime.datetime.now()
+        if last_detection_time is not None:
+            delta = current_time - last_detection_time
+            if delta.total_seconds() < 1.5:
+                event = {
+                    'event': 'Cell phone detected',
+                    'timestamp': str(current_time)
+                }
+                group.append(event)
+            else:
+                group_duration = (datetime.datetime.fromisoformat(
+                    group[-1]['timestamp']) - datetime.datetime.fromisoformat(
+                    group[0]['timestamp'])).total_seconds()
+                group_event = {
+                    'group': group,
+                    'duration': group_duration
+                }
+                # Convert the group to JSON format and write it to the file
+                json_output = json.dumps(group_event, indent=4)
+                file.write(json_output + ",\n")
+                # Start a new group
+                group = [{
+                    'event': 'Cell phone detected',
+                    'timestamp': str(current_time)
+                }]
+        else:
+            group = [{
+                'event': 'Cell phone detected',
+                'timestamp': str(current_time)
+            }]
+        last_detection_time = current_time
 
 
 def compute_detections(results):
@@ -20,41 +61,18 @@ def compute_detections(results):
         for box in boxes:  # iterate boxes
             r = box.xyxy[0].astype(int)  # get corner points as int
             cv2.rectangle(frame, r[:2], r[2:], (255, 255, 255), 2)  # draw boxes on img
-            if "cell phone" in result.names[int(box.cls[0])]:
-                current_time = datetime.datetime.now()
-                if last_detection_time is not None:
-                    delta = current_time - last_detection_time
-                    if delta.total_seconds() < 1.5:
-                        event = {
-                            'event': 'Cell phone detected',
-                            'timestamp': str(current_time)
-                        }
-                        group.append(event)
-                    else:
-                        group_duration = (datetime.datetime.fromisoformat(
-                            group[-1]['timestamp']) - datetime.datetime.fromisoformat(
-                            group[0]['timestamp'])).total_seconds()
-                        group_event = {
-                            'group': group,
-                            'duration': group_duration
-                        }
-                        # Convert the group to JSON format and write it to the file
-                        json_output = json.dumps(group_event, indent=4)
-                        file.write(json_output + ",\n")
-                        # Start a new group
-                        group = [{
-                            'event': 'Cell phone detected',
-                            'timestamp': str(current_time)
-                        }]
-                else:
-                    group = [{
-                        'event': 'Cell phone detected',
-                        'timestamp': str(current_time)
-                    }]
-                last_detection_time = current_time
-            if "person" in result.names[int(box.cls[0])]:
-                # add websocket event here
-                print("person detected")
+            detectionBoxes = result.names[int(box.cls[0])]
+
+            if detectPhones:
+                phoneDetection(detectionBoxes)
+            if detectPersons:
+                personDetection(detectionBoxes)
+
+
+def personDetection(detectionBoxes):
+    if "person" in detectionBoxes:
+        # add websocket event here
+        print("person detected")
 
 
 def yolo_detection_loop():

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Switch, Layout, Slider, Typography, Menu, Button, Select} from 'antd';
+import {Switch, Layout, Slider, Typography, Menu, Button, Select, Input} from 'antd';
 import {makeRequest} from "../api/api.js";
 import {USERSETTINGS} from "../api/endpoints.js";
 import {useTheme} from "../context/ThemeContext.jsx";
@@ -15,6 +15,7 @@ const Settings = () => {
     const [loading, setLoading] = useState(false);
 
     const [initialState, setInitialState] = useState({
+        name: null,
         isNotificationsOn: null,
         appTheme: null,
         isTrackFatigueOn: null,
@@ -29,6 +30,7 @@ const Settings = () => {
     });
 
     const [editedData, setEditedData] = useState({
+        name: null,
         isNotificationsOn: null,
         appTheme: null,
         isTrackFatigueOn: null,
@@ -46,8 +48,9 @@ const Settings = () => {
         const fetchData = async () => {
             try {
                 const response = await makeRequest('GET', USERSETTINGS);
-
+                console.log(response);
                 setEditedData({
+                    name: response.name,
                     isNotificationsOn: response.notifications,
                     appTheme: response.theme,
                     isTrackFatigueOn: response.track_fatigue,
@@ -62,6 +65,7 @@ const Settings = () => {
                 });
 
                 setInitialState({
+                    name: response.name,
                     isNotificationsOn: response.notifications,
                     appTheme: response.theme,
                     isTrackFatigueOn: response.track_fatigue,
@@ -91,6 +95,7 @@ const Settings = () => {
 
 
     const handleInputChange = (name, value) => {
+        console.log(name, value);
         if (name === 'isNotificationsOn' && value) {
             const permission = requestNotificationPermission();
             if (!permission) {
@@ -113,6 +118,7 @@ const Settings = () => {
                 }
                 setInitialState(editedData)
                 setLoading(false);
+                localStorage.setItem('userName', JSON.stringify(editedData.name));
             }, 1000);
         } catch (error) {
 
@@ -203,6 +209,9 @@ const Settings = () => {
                      }}>
                     <div style={{display: 'flex', flexDirection: 'column', gap: "30px"}}>
                         <div>
+                            Name
+                        </div>
+                        <div>
                             Notifications
                         </div>
                         <div>
@@ -215,12 +224,17 @@ const Settings = () => {
                         gap: "30px",
                         marginLeft: 'auto',
                         marginRight: '45px',
-                        width: '100px'
+
                     }}>
+                       <Input
+                           value={editedData.name}
+                            onChange={e => handleInputChange('name', e.target.value)}
+                           style={{minWidth: '250px'}}/>
+
                         <Switch style={{width: '45px', marginLeft: 'auto'}} checked={editedData.isNotificationsOn}
                                 onChange={e => handleInputChange('isNotificationsOn', e)}/>
                         <Select
-                            style={{width: '100px'}}
+                            style={{width: '100px', marginLeft: 'auto'}}
                             onChange={e => handleInputChange('appTheme', e)}
                             value={editedData.appTheme} // Verwenden Sie value anstelle von defaultValue
                             options={[

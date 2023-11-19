@@ -43,7 +43,13 @@ class GetHomeInformationView(APIView):
             breaks = getattr(user_goals, f'{today.lower()}_breaks')
             distractions = getattr(user_goals, f'{today.lower()}_distractions')
 
-            goals.append({'workload': round(workload, 2), 'breaks': round(breaks, 2), 'distractions': round(distractions, 2)})
+            # Setzen Sie Standardwerte, falls die Variablen None sind
+            workload = 0 if workload is None else round(workload, 2)
+            breaks = 0 if breaks is None else round(breaks, 2)
+            distractions = 0 if distractions is None else round(distractions, 2)
+
+            # Fügen Sie die gerundeten Werte dem goals-Array hinzu
+            goals.append({'workload': workload, 'breaks': breaks, 'distractions': distractions})
 
         except UserGoals.DoesNotExist:
             goals.append({'workload': None, 'breaks': None, 'distractions': None})
@@ -146,6 +152,7 @@ class UserSettingsView(APIView):
         except UserSettings.DoesNotExist:
             # send empty UserSettings:
             data = {
+                'name': None,
                 'notifications': True,
                 'theme': 'system',
                 'stand_up_reminder': False,
@@ -164,6 +171,7 @@ class UserSettingsView(APIView):
     def post(self, request):
 
         # get all the information
+        name = request.data.get('name')
         notifications = request.data.get('isNotificationsOn')
         theme = request.data.get('appTheme')
         stand_up_reminder = request.data.get('isStandUpReminderOn')
@@ -186,6 +194,7 @@ class UserSettingsView(APIView):
         message = 'updated settings'
 
         # set the data
+        settings.name = name
         settings.notifications = notifications
         settings.stand_up_reminder = stand_up_reminder
         settings.break_reminder = break_reminder

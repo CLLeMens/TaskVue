@@ -4,6 +4,7 @@ import json
 
 # Create your models here.
 class UserSettings(models.Model):
+    name = models.CharField(max_length=100)
     notifications = models.BooleanField(default=True)
     theme = models.CharField(max_length=20, default='system')
     stand_up_reminder = models.BooleanField(default=False)

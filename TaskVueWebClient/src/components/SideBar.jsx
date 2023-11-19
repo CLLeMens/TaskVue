@@ -17,6 +17,7 @@ const {Title, Paragraph, Text} = Typography;
 const SideBar = ({onMenuSelect, selectedItem}) => {
     const {theme, toggleTheme} = useTheme();
     const [today, setToday] = useState(null);
+    const [userName, setUserName] = useState(JSON.parse(localStorage.getItem('userName')));
 
     const iconStyle = {fontSize: '18px'}; // Definieren Sie einen gemeinsamen Stil für alle Icons
 
@@ -25,6 +26,19 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         {key: 'goals', icon: <AimOutlined style={iconStyle}/>, label: 'Goals'},
         {key: 'settings', icon: <SettingOutlined style={iconStyle}/>, label: 'Settings'},
     ];
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const currentUserName = localStorage.getItem('userName');
+            if (currentUserName !== userName) {
+                console.log('Der userName hat sich verändert:', currentUserName);
+                setUserName(currentUserName);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [userName]);
+
 
     function formatTime(timeString) {
         return timeString.substring(0, 5);
@@ -97,7 +111,7 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
                     <div style={{display: 'flex', alignItems: 'center', margin: '16px'}}>
                         <Avatar size="large" icon={<UserOutlined/>}/>
                         <span style={{marginLeft: '10px', color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)'}}>
-                            Max Mustermann
+                            {JSON.parse(localStorage.getItem('userName'))}
                         </span>
                     </div>
 

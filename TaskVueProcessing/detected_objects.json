@@ -1,1 +1,266 @@
 [
+{
+    "group": [
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:17.328232"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:17.586198"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:17.757513"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:17.967560"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:18.147779"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:18.324374"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:18.509133"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:18.687657"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:18.867098"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:19.046524"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:19.212908"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:19.401885"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:19.590741"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:19.774625"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:19.955848"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:20.141887"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:20.322827"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:20.503609"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:20.696720"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:20.879752"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:21.059946"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:21.241796"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:21.393036"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:21.582182"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:21.759882"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:21.915945"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:22.097587"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:22.253980"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:22.436902"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:22.617156"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:22.805584"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:22.986399"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:23.169890"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:23.352429"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:23.531878"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:23.715430"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:23.890610"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:24.067565"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:24.275070"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:24.457202"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:24.612529"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:24.788208"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:24.944589"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:25.124368"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:25.313613"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:25.491460"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:25.671552"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:25.824890"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:26.005079"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:26.182307"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:26.340705"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:26.520819"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:26.671312"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:26.859697"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:27.046829"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:27.227000"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:27.417245"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:27.597611"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:27.779504"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:27.964642"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:28.140889"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:28.140919"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:28.299728"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:28.476201"
+        },
+        {
+            "event": "Cell phone detected",
+            "timestamp": "2023-11-24 13:41:28.658428"
+        }
+    ],
+    "duration": 11.330196
+},

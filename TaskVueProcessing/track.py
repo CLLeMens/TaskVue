@@ -117,7 +117,6 @@ class ObjectDetector:
 
                 # Zeichnen einer speziellen Bounding-Box oder Markierung für die Hauptperson
                 cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 3)
-                print("Hauptperson Bounding-Box: ", main_person_box)
 
             print("ANZAHL PERSONEN: ", num_persons)
 

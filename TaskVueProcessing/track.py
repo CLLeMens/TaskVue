@@ -1,10 +1,10 @@
 import datetime
 import json
+from itertools import chain
+
 import cv2
 from ultralytics import YOLO
 import dlib
-import numpy as np
-
 
 class ObjectDetector:
     _instance = None
@@ -15,11 +15,13 @@ class ObjectDetector:
             cls._instance = super(ObjectDetector, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, detect_phones=True, detect_persons=True):
+    def __init__(self, detect_phones=True, detect_persons=True, detect_drowsieness=True):
         """Initialize the detector with given settings."""
+
         if not hasattr(self, '_initialized'):  # Avoid reinitialization
             self.detect_phones = detect_phones
             self.detect_persons = detect_persons
+            self.detect_drowsieness = detect_drowsieness
             self.face_detector = dlib.get_frontal_face_detector()
             self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
             self.last_detection_time = None
@@ -28,7 +30,8 @@ class ObjectDetector:
             self._initialized = True
             self.model = YOLO('yolov8s.pt')
             self.drowsy_model = YOLO('best.pt')
-
+            self.start_consecutive_drowsy_time = None
+            self.cumulative_drowsy_time = datetime.timedelta(0)
     def cleanup(self):
         """Clean up the JSON file by removing the last comma."""
         with open("detected_objects.json", "r") as file:
@@ -54,6 +57,26 @@ class ObjectDetector:
                 self.group = [{'event': 'Cell phone detected', 'timestamp': str(current_time)}]
             self.last_detection_time = current_time
 
+    def drowsy_detection(self, detection_boxes):
+        current_time = datetime.datetime.now()
+
+        if "drowsy" in detection_boxes:
+            if self.start_consecutive_drowsy_time is None:
+                # Drowsiness just started
+                self.start_consecutive_drowsy_time = current_time
+
+            # Calculate consecutive drowsy time
+            consecutive_drowsy_time = current_time - self.start_consecutive_drowsy_time
+        else:
+            if self.start_consecutive_drowsy_time is not None:
+                # Drowsiness just ended, update cumulative time
+                self.cumulative_drowsy_time += current_time - self.start_consecutive_drowsy_time
+                self.start_consecutive_drowsy_time = None  # Reset the start time
+
+            consecutive_drowsy_time = datetime.timedelta(0)  # Reset consecutive drowsy time
+
+        print(f"Consecutive Drowsiness Time: {consecutive_drowsy_time.total_seconds()} seconds")
+        print(f"Cumulative Drowsiness Time: {self.cumulative_drowsy_time.total_seconds()} seconds")
     def _write_group_to_file(self, current_time):
         """Write detection group to file."""
         group_duration = (datetime.datetime.fromisoformat(self.group[-1]['timestamp']) -
@@ -69,9 +92,9 @@ class ObjectDetector:
 
 
 
-    def compute_detections(self, results, frame):
+    def compute_detections(self, results_yolo, results_drowsy, frame):
         num_persons, max_area, main_person_box = 0, 0, None
-
+        results = chain(results_yolo, results_drowsy)
         for result in results:
             boxes = result.boxes.cpu().numpy()
             for box in boxes:
@@ -89,6 +112,9 @@ class ObjectDetector:
                         if area > max_area:
                             max_area = area
                             main_person_box = r
+                if self.detect_drowsieness:
+                    print("bruh")
+                    self.drowsy_detection(detection_box_name)
 
             if main_person_box is not None:
                 x1, y1, x2, y2 = main_person_box
@@ -129,7 +155,8 @@ class ObjectDetector:
                 success, frame = cap.read()
                 if success:
                     results = self.model(frame)
-                    self.compute_detections(results, frame)
+                    results_drowsy = self.drowsy_model(frame)
+                    self.compute_detections(results, results_drowsy, frame)
                     annotated_frame = results[0].plot()
                     cv2.imshow("YOLOv8 Inference", annotated_frame)
                     if cv2.waitKey(1) & 0xFF == ord("q"):
@@ -148,7 +175,7 @@ class ObjectDetector:
             self._write_group_to_file(datetime.datetime.now())
         self.file.write("]\n")
 
-    @classmethod5
+    @classmethod
     def get_instance(cls, *args, **kwargs):
         """Get an instance of the class."""
         if not cls._instance:

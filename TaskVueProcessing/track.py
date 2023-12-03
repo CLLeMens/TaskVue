@@ -32,6 +32,8 @@ class ObjectDetector:
             self.drowsy_model = YOLO('best.pt')
             self.start_consecutive_drowsy_time = None
             self.cumulative_drowsy_time = datetime.timedelta(0)
+            self.consecutive_drowsy_time = datetime.timedelta(0)
+            self.prev_consecutive_drowsy_time = datetime.timedelta(0)
     def cleanup(self):
         """Clean up the JSON file by removing the last comma."""
         with open("detected_objects.json", "r") as file:
@@ -60,23 +62,27 @@ class ObjectDetector:
     def drowsy_detection(self, detection_boxes):
         current_time = datetime.datetime.now()
 
-        if "drowsy" in detection_boxes:
+        if "awake" not in detection_boxes:
             if self.start_consecutive_drowsy_time is None:
                 # Drowsiness just started
                 self.start_consecutive_drowsy_time = current_time
 
             # Calculate consecutive drowsy time
-            consecutive_drowsy_time = current_time - self.start_consecutive_drowsy_time
+            self.consecutive_drowsy_time = current_time - self.start_consecutive_drowsy_time
         else:
+            # Check if there was previously detected drowsiness
             if self.start_consecutive_drowsy_time is not None:
+                print("Drowsiness ended")
                 # Drowsiness just ended, update cumulative time
                 self.cumulative_drowsy_time += current_time - self.start_consecutive_drowsy_time
-                self.start_consecutive_drowsy_time = None  # Reset the start time
+                self.start_consecutive_drowsy_time = None  # Reset the start time for consecutive drowsiness
 
-            consecutive_drowsy_time = datetime.timedelta(0)  # Reset consecutive drowsy time
+                self.consecutive_drowsy_time = datetime.timedelta(0)  # Reset consecutive drowsy time
+            self.start_consecutive_drowsy_time = None
 
-        print(f"Consecutive Drowsiness Time: {consecutive_drowsy_time.total_seconds()} seconds")
+        print(f"Consecutive Drowsiness Time: {self.consecutive_drowsy_time.total_seconds()} seconds")
         print(f"Cumulative Drowsiness Time: {self.cumulative_drowsy_time.total_seconds()} seconds")
+
     def _write_group_to_file(self, current_time):
         """Write detection group to file."""
         group_duration = (datetime.datetime.fromisoformat(self.group[-1]['timestamp']) -

@@ -84,7 +84,6 @@ class ObjectDetector:
                 print(f"{state} state has been active for more than 10 seconds consecutively.")
                 timer.stop(current_time)
 
-
     def cleanup(self):
         """Clean up the JSON file by removing the last comma."""
         with open("detected_objects.json", "r") as file:
@@ -111,8 +110,6 @@ class ObjectDetector:
     def person_detection(self, detection_boxes):
         """Detect persons in the frame."""
         return "person" in detection_boxes
-
-
 
     def compute_detections(self, results, frame):
         current_states = []
@@ -144,7 +141,8 @@ class ObjectDetector:
                 roi = frame[y1:y2, x1:x2]
 
                 drowsy_results = self.drowsy_model(roi, verbose=False)
-                self.process_drowsy_detections(drowsy_results, roi)
+                if (self.process_drowsy_detections(drowsy_results, roi)) == "drowsy":
+                    current_states.append('drowsy')
 
             if num_persons > 1:
                 current_states.append('multiple_persons')
@@ -154,6 +152,7 @@ class ObjectDetector:
             self.check_timers(current_time)
 
             print(self.timers['phone'].get_cumulative_time())
+            print(self.timers['drowsy'].get_cumulative_time())
 
     def process_drowsy_detections(self, results, frame):
         """Process drowsy detections."""
@@ -163,7 +162,6 @@ class ObjectDetector:
             if len(result.boxes.cpu().numpy()) == 0:
                 print("Look Away detected")
             for box in result.boxes.cpu().numpy():
-
                 r = box.xyxy[0].astype(int)
                 boxes.append(r)
                 confidences.append(box.conf.item())
@@ -181,12 +179,10 @@ class ObjectDetector:
 
             if state == "drowsy":
                 print("Drowsy detected")
-
+                return "drowsy"
 
             if state == 'Look_Forward':
                 print("Look Away detected")
-
-
 
     def run_detection_loop(self):
         """Run the main detection loop."""
@@ -222,6 +218,7 @@ class ObjectDetector:
         if not cls._instance:
             cls._instance = ObjectDetector(*args, **kwargs)
         return cls._instance
+
 
 # Usage
 detector = ObjectDetector.get_instance(detect_phones=True, detect_persons=True)

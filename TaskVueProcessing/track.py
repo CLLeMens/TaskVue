@@ -1,10 +1,44 @@
 import datetime
 import json
-from itertools import chain
-
 import cv2
 from ultralytics import YOLO
 import dlib
+
+
+class StateTimer:
+    def __init__(self):
+        self.start_time = None
+        self.cumulative_time = datetime.timedelta(0)
+        self.consecutive_time = datetime.timedelta(0)
+
+    def start(self, current_time):
+        if self.start_time is None:
+            self.start_time = current_time
+
+    def update(self, current_time):
+        if self.start_time:
+            self.consecutive_time = current_time - self.start_time
+
+    def update_cumulative(self, current_time):
+        if self.start_time:
+            self.cumulative_time += current_time - self.start_time
+            self.start_time = current_time
+
+    def stop(self, current_time):
+        if self.start_time:
+            self.cumulative_time += current_time - self.start_time
+            self.reset_consecutive()
+
+    def reset_consecutive(self):
+        self.consecutive_time = datetime.timedelta(0)
+        self.start_time = None
+
+    def get_cumulative_time(self):
+        return self.cumulative_time.total_seconds()
+
+    def get_consecutive_time(self):
+        return self.consecutive_time.total_seconds()
+
 
 class ObjectDetector:
     _instance = None
@@ -15,23 +49,40 @@ class ObjectDetector:
             cls._instance = super(ObjectDetector, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, detect_phones=True, detect_persons=True, detect_drowsiness=True):
+    def __init__(self, detect_phones=True, detect_persons=True):
         """Initialize the detector with given settings."""
-
         if not hasattr(self, '_initialized'):  # Avoid reinitialization
             self.detect_phones = detect_phones
             self.detect_persons = detect_persons
-            self.detect_drowsiness = detect_drowsiness
             self.face_detector = dlib.get_frontal_face_detector()
-            self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
             self.last_detection_time = None
             self.group = []
             self.file = None
             self._initialized = True
             self.model = YOLO('yolov8s.pt')
             self.drowsy_model = YOLO('best.pt')
-            self.start_consecutive_drowsy_time = None
-            self.cumulative_drowsy_time = datetime.timedelta(0)
+
+            self.timers = {
+                'phone': StateTimer(),
+                'drowsy': StateTimer(),
+                'multiple_persons': StateTimer(),
+                'look_away': StateTimer()
+            }
+
+    def update_timers(self, current_states, current_time):
+        for state, timer in self.timers.items():
+            if state in current_states:
+                timer.start(current_time)
+                timer.update(current_time)
+            else:
+                timer.stop(current_time)
+
+    def check_timers(self, current_time):
+        for state, timer in self.timers.items():
+            print(state, timer.get_consecutive_time())
+            if timer.get_consecutive_time() > 10:
+                print(f"{state} state has been active for more than 10 seconds consecutively.")
+                timer.stop(current_time)
 
 
     def cleanup(self):
@@ -46,39 +97,8 @@ class ObjectDetector:
 
     def phone_detection(self, detection_boxes):
         """Detect phones and log events."""
-        if "cell phone" in detection_boxes:
-            current_time = datetime.datetime.now()
-            if self.last_detection_time is not None:
-                delta = current_time - self.last_detection_time
-                if delta.total_seconds() < 1.5:
-                    event = {'event': 'Cell phone detected', 'timestamp': str(current_time)}
-                    self.group.append(event)
-                else:
-                    self._write_group_to_file(current_time)
-            else:
-                self.group = [{'event': 'Cell phone detected', 'timestamp': str(current_time)}]
-            self.last_detection_time = current_time
+        return "cell phone" in detection_boxes
 
-    def drowsy_detection(self, detection_boxes):
-        current_time = datetime.datetime.now()
-
-        if "drowsy" in detection_boxes:
-            if self.start_consecutive_drowsy_time is None:
-                # Drowsiness just started
-                self.start_consecutive_drowsy_time = current_time
-
-            # Calculate consecutive drowsy time
-            consecutive_drowsy_time = current_time - self.start_consecutive_drowsy_time
-        else:
-            if self.start_consecutive_drowsy_time is not None:
-                # Drowsiness just ended, update cumulative time
-                self.cumulative_drowsy_time += current_time - self.start_consecutive_drowsy_time
-                self.start_consecutive_drowsy_time = None  # Reset the start time
-
-            consecutive_drowsy_time = datetime.timedelta(0)  # Reset consecutive drowsy time
-
-        print(f"Consecutive Drowsiness Time: {consecutive_drowsy_time.total_seconds()} seconds")
-        print(f"Cumulative Drowsiness Time: {self.cumulative_drowsy_time.total_seconds()} seconds")
     def _write_group_to_file(self, current_time):
         """Write detection group to file."""
         group_duration = (datetime.datetime.fromisoformat(self.group[-1]['timestamp']) -
@@ -88,15 +108,16 @@ class ObjectDetector:
         self.file.write(json_output + ",\n")
         self.group = [{'event': 'Cell phone detected', 'timestamp': str(current_time)}]
 
-    def person_detection(self, detection_boxes, frame):
+    def person_detection(self, detection_boxes):
         """Detect persons in the frame."""
         return "person" in detection_boxes
 
 
 
-    def compute_detections(self, results_yolo, results_drowsy, frame):
+    def compute_detections(self, results, frame):
+        current_states = []
         num_persons, max_area, main_person_box = 0, 0, None
-        results = chain(results_yolo, results_drowsy)
+
         for result in results:
             boxes = result.boxes.cpu().numpy()
             for box in boxes:
@@ -105,33 +126,44 @@ class ObjectDetector:
                 detection_box_name = result.names[int(box.cls[0])]
 
                 if self.detect_phones:
-                    self.phone_detection(detection_box_name)
+
+                    if self.phone_detection(detection_box_name):
+                        current_states.append('phone')
+
                 if self.detect_persons:
-                    person_detected = self.person_detection(detection_box_name, frame)
+                    person_detected = self.person_detection(detection_box_name)
                     if person_detected:
                         num_persons += 1
                         area = (r[2] - r[0]) * (r[3] - r[1])
                         if area > max_area:
                             max_area = area
                             main_person_box = r
-                if self.detect_drowsiness:
-                    print("bruh")
-                    self.drowsy_detection(detection_box_name)
 
             if main_person_box is not None:
                 x1, y1, x2, y2 = main_person_box
                 roi = frame[y1:y2, x1:x2]
 
-                drowsy_results = self.drowsy_model(roi)
-                self.process_drowsy_detections(drowsy_results, roi, main_person_box)
+                drowsy_results = self.drowsy_model(roi, verbose=False)
+                self.process_drowsy_detections(drowsy_results, roi)
 
-            print("Number of Persons: ", num_persons)
+            if num_persons > 1:
+                current_states.append('multiple_persons')
 
-    def process_drowsy_detections(self, results, frame, main_person_box):
+            current_time = datetime.datetime.now()
+            self.update_timers(current_states, current_time)
+            self.check_timers(current_time)
+
+            print(self.timers['phone'].get_cumulative_time())
+
+    def process_drowsy_detections(self, results, frame):
         """Process drowsy detections."""
         boxes, confidences = [], []
+
         for result in results:
+            if len(result.boxes.cpu().numpy()) == 0:
+                print("Look Away detected")
             for box in result.boxes.cpu().numpy():
+
                 r = box.xyxy[0].astype(int)
                 boxes.append(r)
                 confidences.append(box.conf.item())
@@ -147,6 +179,14 @@ class ObjectDetector:
             cv2.putText(frame, text, (r[0], r[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
             cv2.rectangle(frame, r[:2], r[2:], (0, 0, 255), 2)
 
+            if state == "drowsy":
+                print("Drowsy detected")
+
+
+            if state == 'Look_Forward':
+                print("Look Away detected")
+
+
 
     def run_detection_loop(self):
         """Run the main detection loop."""
@@ -156,9 +196,8 @@ class ObjectDetector:
             while cap.isOpened():
                 success, frame = cap.read()
                 if success:
-                    results = self.model(frame)
-                    results_drowsy = self.drowsy_model(frame)
-                    self.compute_detections(results, results_drowsy, frame)
+                    results = self.model(frame, verbose=False)
+                    self.compute_detections(results, frame)
                     annotated_frame = results[0].plot()
                     cv2.imshow("YOLOv8 Inference", annotated_frame)
                     if cv2.waitKey(1) & 0xFF == ord("q"):

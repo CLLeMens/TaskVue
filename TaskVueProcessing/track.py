@@ -15,13 +15,13 @@ class ObjectDetector:
             cls._instance = super(ObjectDetector, cls).__new__(cls)
         return cls._instance
 
-    def __init__(self, detect_phones=True, detect_persons=True, detect_drowsieness=True):
+    def __init__(self, detect_phones=True, detect_persons=True, detect_drowsiness=True):
         """Initialize the detector with given settings."""
 
         if not hasattr(self, '_initialized'):  # Avoid reinitialization
             self.detect_phones = detect_phones
             self.detect_persons = detect_persons
-            self.detect_drowsieness = detect_drowsieness
+            self.detect_drowsiness = detect_drowsiness
             self.face_detector = dlib.get_frontal_face_detector()
             self.predictor = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
             self.last_detection_time = None
@@ -32,6 +32,8 @@ class ObjectDetector:
             self.drowsy_model = YOLO('best.pt')
             self.start_consecutive_drowsy_time = None
             self.cumulative_drowsy_time = datetime.timedelta(0)
+
+
     def cleanup(self):
         """Clean up the JSON file by removing the last comma."""
         with open("detected_objects.json", "r") as file:
@@ -112,7 +114,7 @@ class ObjectDetector:
                         if area > max_area:
                             max_area = area
                             main_person_box = r
-                if self.detect_drowsieness:
+                if self.detect_drowsiness:
                     print("bruh")
                     self.drowsy_detection(detection_box_name)
 

@@ -82,7 +82,7 @@ class ObjectDetector:
             print(state, timer.get_consecutive_time())
             if timer.get_consecutive_time() > 10:
                 print(f"{state} state has been active for more than 10 seconds consecutively.")
-                timer.stop(current_time)
+
 
 
     def cleanup(self):
@@ -144,7 +144,7 @@ class ObjectDetector:
                 roi = frame[y1:y2, x1:x2]
 
                 drowsy_results = self.drowsy_model(roi, verbose=False)
-                self.process_drowsy_detections(drowsy_results, roi)
+                self.process_drowsy_detections(drowsy_results, roi, current_states)
 
             if num_persons > 1:
                 current_states.append('multiple_persons')
@@ -155,13 +155,14 @@ class ObjectDetector:
 
             print(self.timers['phone'].get_cumulative_time())
 
-    def process_drowsy_detections(self, results, frame):
+    def process_drowsy_detections(self, results, frame, current_states):
         """Process drowsy detections."""
         boxes, confidences = [], []
 
         for result in results:
             if len(result.boxes.cpu().numpy()) == 0:
-                print("Look Away detected")
+                current_states.append('look_away')
+
             for box in result.boxes.cpu().numpy():
 
                 r = box.xyxy[0].astype(int)
@@ -180,11 +181,11 @@ class ObjectDetector:
             cv2.rectangle(frame, r[:2], r[2:], (0, 0, 255), 2)
 
             if state == "drowsy":
-                print("Drowsy detected")
-
+                current_states.append('drowsy')
 
             if state == 'Look_Forward':
-                print("Look Away detected")
+                current_states.append('look_away')
+
 
 
 

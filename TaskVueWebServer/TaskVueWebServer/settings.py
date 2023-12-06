@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
     'TaskVueWebAPI',
+    'TaskVueProcessing',
 ]
 
 MIDDLEWARE = [

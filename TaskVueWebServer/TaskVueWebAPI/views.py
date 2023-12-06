@@ -6,6 +6,9 @@ from rest_framework.response import Response
 from .utils import UserSettingsSerializer, UserGoalsSerializer
 import datetime
 from isoweek import Week
+from threading import Thread
+from TaskVueProcessing.track import ObjectDetector
+
 
 
 class GetThemeView(APIView):
@@ -387,4 +390,34 @@ class UserGoalsView(APIView):
         goals.save()
 
         # return success
+        return Response({}, status=status.HTTP_200_OK)
+
+
+# Globale Variable
+global_detector = None
+global_detector_thread = None
+
+class TimerView(APIView):
+
+    def get(self, request):
+        global global_detector
+        global global_detector_thread
+
+        method = request.GET.get('method', '')
+
+        if method == 'start':
+            print('START')
+            if not global_detector:
+                global_detector = ObjectDetector.get_instance(detect_phones=True, detect_persons=True)
+            if not global_detector_thread or not global_detector_thread.is_alive():
+                global_detector_thread = Thread(target=global_detector.run_detection_loop)
+                global_detector_thread.start()
+
+        elif method == 'stop':
+            print('STOP')
+            if global_detector:
+                global_detector.stop_detection()
+            if global_detector_thread and global_detector_thread.is_alive():
+                global_detector_thread.join()
+
         return Response({}, status=status.HTTP_200_OK)

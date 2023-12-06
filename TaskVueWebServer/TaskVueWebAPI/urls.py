@@ -11,4 +11,5 @@ urlpatterns = [
 
     path('user-settings/', views.UserSettingsView.as_view(), name='user-settings'),
     path('user-goals/', views.UserGoalsView.as_view(), name='user-goals'),
+    path('timer/', views.TimerView.as_view(), name='timer'),
 ]

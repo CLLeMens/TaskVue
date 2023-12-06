@@ -3,7 +3,7 @@ import {Layout, Button, Card, Tag, Modal, Divider, Typography} from 'antd';
 import {InfoCircleTwoTone} from '@ant-design/icons';
 import {useTheme} from "../context/ThemeContext.jsx";
 import {makeRequest} from "../api/api.js";
-import {GETHOMEINFO, PROCESSFLOW} from "../api/endpoints.js";
+import {GETHOMEINFO, PROCESSFLOW, TIMER} from "../api/endpoints.js";
 
 const {Title} = Typography;
 
@@ -23,16 +23,16 @@ const Home = () => {
     const [workBreakTimes, setWorkBreakTimes] = useState(null);
 
     useEffect(() => {
-    const interval = setInterval(() => {
-        const storedProcessFlow = localStorage.getItem('processFlow');
-        if (storedProcessFlow) {
-            const parsedData = JSON.parse(storedProcessFlow);
-            setProcessFlowState(parsedData);
-        }
-    }, 500);
+        const interval = setInterval(() => {
+            const storedProcessFlow = localStorage.getItem('processFlow');
+            if (storedProcessFlow) {
+                const parsedData = JSON.parse(storedProcessFlow);
+                setProcessFlowState(parsedData);
+            }
+        }, 500);
 
-    return () => clearInterval(interval);
-}, []);
+        return () => clearInterval(interval);
+    }, []);
 
 
     useEffect(() => {
@@ -98,7 +98,6 @@ const Home = () => {
         const fetchData = async () => {
             try {
                 const response = await makeRequest('GET', GETHOMEINFO);
-                console.log(response)
                 setInformation(response)
             } catch (error) {
                 console.log(error);
@@ -121,7 +120,13 @@ const Home = () => {
 
 
     // Funktionen zum Starten und Stoppen des Timers
-    const startTimer = () => {
+    const startTimer = async () => {
+        try {
+            const response = await makeRequest('GET', TIMER, {'method': 'start'})
+        } catch (error) {
+            console.log(error);
+        }
+
         const startTime = new Date();
         setIsRunning(true);
         setStartTime(startTime);
@@ -155,17 +160,29 @@ const Home = () => {
             } catch (error) {
                 console.log(error);
             }
+            try {
+                const response = await makeRequest('GET', TIMER, {'method': 'stop'})
+            } catch (error) {
+                console.log(error);
+            }
         }
+
         fetchData();
 
     };
 
-    const toggleTimer = (process) => {
+    const toggleTimer = async (process) => {
 
         setIsRunning(!isRunning);
         if (!isRunning) {
             // Berechnen der Pausezeit in ganzen Sekunden
             let additionalPauseTime = Math.floor((new Date() - breakTime) / 1000);
+
+            try {
+                const response = await makeRequest('GET', TIMER, {'method': 'start'})
+            } catch (error) {
+                console.log(error);
+            }
 
             setPauseTime(pauseTime + additionalPauseTime);
             setStartTime(new Date());
@@ -177,6 +194,11 @@ const Home = () => {
 
             }));
         } else {
+            try {
+                const response = await makeRequest('GET', TIMER, {'method': 'stop'})
+            } catch (error) {
+                console.log(error);
+            }
             setBreakTime(new Date());
             localStorage.setItem('timer', JSON.stringify({
                 startTime: startTime,

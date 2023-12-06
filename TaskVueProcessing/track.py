@@ -8,36 +8,44 @@ import dlib
 class StateTimer:
     def __init__(self):
         self.start_time = None
+        self.last_update_time = None
         self.cumulative_time = datetime.timedelta(0)
         self.consecutive_time = datetime.timedelta(0)
+        self.has_exceeded_threshold = False
 
     def start(self, current_time):
         if self.start_time is None:
             self.start_time = current_time
-
-    def update(self, current_time):
-        if self.start_time:
-            self.consecutive_time = current_time - self.start_time
+            self.last_update_time = current_time
 
     def update_cumulative(self, current_time):
         if self.start_time:
-            self.cumulative_time += current_time - self.start_time
-            self.start_time = current_time
+            self.consecutive_time = current_time - self.start_time
+            if self.consecutive_time.total_seconds() > 10:
+                self.has_exceeded_threshold = True
+
+            if self.has_exceeded_threshold:
+                elapsed_time_since_last_update = current_time - self.last_update_time
+                self.cumulative_time += elapsed_time_since_last_update
+                self.last_update_time = current_time
 
     def stop(self, current_time):
-        if self.start_time:
-            self.cumulative_time += current_time - self.start_time
-            self.reset_consecutive()
+        if self.start_time and self.has_exceeded_threshold:
+            elapsed_time_since_last_update = current_time - self.last_update_time
+            self.cumulative_time += elapsed_time_since_last_update
 
-    def reset_consecutive(self):
         self.consecutive_time = datetime.timedelta(0)
         self.start_time = None
+        self.last_update_time = None
+        self.has_exceeded_threshold = False
+
 
     def get_cumulative_time(self):
         return self.cumulative_time.total_seconds()
 
     def get_consecutive_time(self):
         return self.consecutive_time.total_seconds()
+
 
 
 class ObjectDetector:
@@ -73,11 +81,11 @@ class ObjectDetector:
         for state, timer in self.timers.items():
             if state in current_states:
                 timer.start(current_time)
-                timer.update(current_time)
+                timer.update_cumulative(current_time)
             else:
                 timer.stop(current_time)
 
-    def check_timers(self, current_time):
+    def check_timers(self):
         for state, timer in self.timers.items():
             print(state, timer.get_consecutive_time())
             if timer.get_consecutive_time() > 10:
@@ -99,6 +107,11 @@ class ObjectDetector:
         """Detect phones and log events."""
         return "cell phone" in detection_boxes
 
+    def person_detection(self, detection_boxes):
+        """Detect persons in the frame."""
+        return "person" in detection_boxes
+
+
     def _write_group_to_file(self, current_time):
         """Write detection group to file."""
         group_duration = (datetime.datetime.fromisoformat(self.group[-1]['timestamp']) -
@@ -107,11 +120,6 @@ class ObjectDetector:
         json_output = json.dumps(group_event, indent=4)
         self.file.write(json_output + ",\n")
         self.group = [{'event': 'Cell phone detected', 'timestamp': str(current_time)}]
-
-    def person_detection(self, detection_boxes):
-        """Detect persons in the frame."""
-        return "person" in detection_boxes
-
 
 
     def compute_detections(self, results, frame):
@@ -151,8 +159,7 @@ class ObjectDetector:
 
             current_time = datetime.datetime.now()
             self.update_timers(current_states, current_time)
-            self.check_timers(current_time)
-
+            self.check_timers()
             print(self.timers['phone'].get_cumulative_time())
 
     def process_drowsy_detections(self, results, frame, current_states):
@@ -161,6 +168,7 @@ class ObjectDetector:
 
         for result in results:
             if len(result.boxes.cpu().numpy()) == 0:
+                print("No face detected")
                 current_states.append('look_away')
 
             for box in result.boxes.cpu().numpy():

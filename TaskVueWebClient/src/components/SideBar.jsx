@@ -56,7 +56,6 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         const interval = setInterval(() => {
             const currentUserName = localStorage.getItem('userName');
             if (currentUserName !== userName) {
-                console.log('Der userName hat sich verändert:', currentUserName);
                 setUserName(currentUserName);
             }
         }, 1000);
@@ -111,7 +110,6 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
 
     return (
         <Layout>
-
             <Sider
                 width={300}
                 style={{

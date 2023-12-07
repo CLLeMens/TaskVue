@@ -38,8 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
+    'channels',
     'TaskVueWebAPI',
     'TaskVueProcessing',
+
 ]
 
 MIDDLEWARE = [
@@ -71,6 +73,16 @@ TEMPLATES = [
     },
 ]
 ASGI_APPLICATION = "TaskVueWebServer.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],  # Beispielkonfiguration für Redis
+        },
+    },
+}
+
 WSGI_APPLICATION = 'TaskVueWebServer.wsgi.application'
 
 # Database

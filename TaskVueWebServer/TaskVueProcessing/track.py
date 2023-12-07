@@ -4,8 +4,11 @@ import cv2
 from ultralytics import YOLO
 import dlib
 import os
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
+
 
 class StateTimer:
     def __init__(self):
@@ -41,13 +44,11 @@ class StateTimer:
         self.last_update_time = None
         self.has_exceeded_threshold = False
 
-
     def get_cumulative_time(self):
         return self.cumulative_time.total_seconds()
 
     def get_consecutive_time(self):
         return self.consecutive_time.total_seconds()
-
 
 
 class ObjectDetector:
@@ -88,12 +89,19 @@ class ObjectDetector:
                 timer.stop(current_time)
 
     def check_timers(self):
+        channel_layer = get_channel_layer()
         for state, timer in self.timers.items():
-            print(state, timer.get_consecutive_time())
             if timer.get_consecutive_time() > 10:
-                print(f"{state} state has been active for more than 10 seconds consecutively.")
+                message = f"{state}"
 
-
+                # Senden der Nachricht an den WebSocket
+                async_to_sync(channel_layer.group_send)(
+                    "taskvue_group",  # Gruppenname, den Sie verwenden möchten
+                    {
+                        "type": "send_message_to_frontend",
+                        "message": message
+                    }
+                )
 
     def cleanup(self):
         """Clean up the JSON file by removing the last comma."""
@@ -113,7 +121,6 @@ class ObjectDetector:
         """Detect persons in the frame."""
         return "person" in detection_boxes
 
-
     def _write_group_to_file(self, current_time):
         """Write detection group to file."""
         group_duration = (datetime.datetime.fromisoformat(self.group[-1]['timestamp']) -
@@ -122,7 +129,6 @@ class ObjectDetector:
         json_output = json.dumps(group_event, indent=4)
         self.file.write(json_output + ",\n")
         self.group = [{'event': 'Cell phone detected', 'timestamp': str(current_time)}]
-
 
     def compute_detections(self, results, frame):
         current_states = []
@@ -174,7 +180,6 @@ class ObjectDetector:
                 current_states.append('look_away')
 
             for box in result.boxes.cpu().numpy():
-
                 r = box.xyxy[0].astype(int)
                 boxes.append(r)
                 confidences.append(box.conf.item())
@@ -221,7 +226,6 @@ class ObjectDetector:
         """Stop the detection loop."""
         self.running = False
 
-
     def _finalize_file(self):
         """Finalize and close the file."""
         if self.group:
@@ -234,4 +238,3 @@ class ObjectDetector:
         if not cls._instance:
             cls._instance = ObjectDetector(*args, **kwargs)
         return cls._instance
-

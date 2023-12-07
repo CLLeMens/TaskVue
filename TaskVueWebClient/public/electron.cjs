@@ -5,6 +5,12 @@ const path = require('path');
 const WebSocket = require('ws');
 // Define the path to the application's icon
 const iconPath = path.join(__dirname, '..', 'public', 'logo.png');
+const {Notification} = require('electron');
+
+function showNotification(title, body) {
+    new Notification({title, body}).show();
+}
+
 
 // Initialize variables for tray and window to null to define them globally
 let tray = null;
@@ -27,7 +33,7 @@ function createWindow() {
     // Load the app using a local URL
     win.loadURL('http://localhost:3000');
     // Opens the DevTools for debugging
-    win.webContents.openDevTools();
+    //win.webContents.openDevTools();
 
     const logo = nativeImage.createFromPath(iconPath);
     // Falls auf macOS, setzen Sie das Dock-Icon
@@ -47,10 +53,28 @@ function createWindow() {
     ws.onmessage = function (event) {
         // Empfangen einer Nachricht vom Server
         const data = JSON.parse(event.data);
+        let body;
+        switch (data.message) {
+            case 'phone':
+                body = 'Stay focused! Put your phone away to maintain productivity.';
+                break;
+            case 'drowsy':
+                body = 'Feeling sleepy? Take a break to recharge and improve your focus.';
+                break;
+            case 'multiple_persons':
+                body = 'Try to minimize interruptions from others to stay on track.';
+                break;
+            case 'look_away':
+                body = 'Eyes on the Screen! Staying focused on your task will boost efficiency.';
+                break;
+            default:
+                body = 'Stay focused!';
+        }
+
+
+        showNotification('Attention', body);
         console.log("Message from server: ", data.message);
     };
-
-
 }
 
 // Function to create the system tray icon and associated functionality.
@@ -161,6 +185,7 @@ function createTrayWindow() {
 // App lifecycle event: when Electron has finished initializing
 app.on('ready', () => {
     app.setName('TaskVue'); // Set the application name
+    app.setAppUserModelId('com.taskvue'); // Set an ID for the app
     // Create the main window and the system tray icon
     createWindow();
     createTray();
@@ -179,5 +204,7 @@ app.on('activate', () => {
     // If the main window was closed, recreate it
     if (win === null) {
         createWindow();
+        // Benachrichtigung anzeigen
+
     }
 });

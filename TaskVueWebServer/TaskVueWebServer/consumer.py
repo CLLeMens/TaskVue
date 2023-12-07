@@ -3,21 +3,26 @@ import json
 
 class TaskVueConsumer(AsyncWebsocketConsumer):
 
-    async def websocket_connect(self, event):
-        # Akzeptieren der WebSocket-Verbindung
+    async def connect(self):
+        # Gruppe beitreten
+        await self.channel_layer.group_add(
+            "taskvue_group",
+            self.channel_name
+        )
+
         await self.accept()
 
-        # Senden einer Begrüßungsnachricht an den Client
-        await self.send(text_data=json.dumps({
-            "message": "Hello from the server!"
-        }))
+    async def disconnect(self, close_code):
+        # Gruppe verlassen
+        await self.channel_layer.group_discard(
+            "taskvue_group",
+            self.channel_name
+        )
 
-    async def websocket_receive(self, event):
-        # Empfangen der Nachricht vom Client
-        text_data_json = json.loads(event['text'])
-        message = text_data_json['message']
-
-        # Echo: Senden der empfangenen Nachricht zurück an den Client
+    # Handler für Nachrichten, die von track.py gesendet werden
+    async def send_message_to_frontend(self, event):
+        message = event['message']
         await self.send(text_data=json.dumps({
             "message": message
         }))
+

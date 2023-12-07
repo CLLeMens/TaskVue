@@ -63,12 +63,10 @@ class ProcessFlowView(APIView):
     def get(self, request):
         # todays date
         today_date = datetime.date.today()
-
         try:
             process_flow = ProcessFlow.objects.get(date=today_date).get_data()
             corrected_process_flow = process_flow.replace("'", '"')
             process_flow_data = json.loads(corrected_process_flow)
-
             return Response(process_flow_data, status=status.HTTP_200_OK)
         except ProcessFlow.DoesNotExist:
             return Response({}, status=status.HTTP_200_OK)

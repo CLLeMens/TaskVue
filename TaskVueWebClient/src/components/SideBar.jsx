@@ -27,6 +27,31 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         {key: 'settings', icon: <SettingOutlined style={iconStyle}/>, label: 'Settings'},
     ];
 
+
+    useEffect(() => {
+        // check if localstorage processFlow exists
+        const fetchData = async () => {
+            try {
+                const response = await makeRequest('GET', PROCESSFLOW)
+
+
+                // check if response is empty object
+                if (Object.keys(response).length !== 0) {
+                    const periods = calculatePeriods(response);
+                    setToday(periods);
+                } else {
+                    localStorage.removeItem('processFlow')
+                }
+
+            } catch (e) {
+                console.log(e);
+            }
+        }
+        fetchData();
+
+    }, [])
+
+
     useEffect(() => {
         const interval = setInterval(() => {
             const currentUserName = localStorage.getItem('userName');
@@ -39,15 +64,32 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         return () => clearInterval(interval);
     }, [userName]);
 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            const currentProcessFlow = localStorage.getItem('processFlow');
+            if (currentProcessFlow !== today) {
+                const preparedProcessFlow = JSON.parse(currentProcessFlow);
+                const periods = calculatePeriods(preparedProcessFlow);
+                setToday(periods);
+            }
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [today]);
+
 
     function formatTime(timeString) {
         return timeString.substring(0, 5);
     }
 
+
     function calculatePeriods(data) {
         let periods = [];
         let lastTime = null;
         let lastProcess = null;
+        if (data.length % 2 !== 0) {
+            data.pop();
+        }
 
         data.forEach(item => {
             if (lastTime) {
@@ -65,27 +107,6 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
 
         return periods;
     }
-
-    useEffect(() => {
-        // check if localstorage processFlow exists
-        const fetchData = async () => {
-            try {
-                const response = await makeRequest('GET', PROCESSFLOW)
-
-
-                // check if response is empty object
-                if (Object.keys(response).length !== 0) {
-                    const periods = calculatePeriods(response);
-                    setToday(periods);
-                }
-
-            } catch (e) {
-                console.log(e);
-            }
-        }
-        fetchData();
-
-    }, [])
 
 
     return (

@@ -21,7 +21,12 @@ const Home = () => {
     const [breakTime, setBreakTime] = useState(0);
     const [processFlowState, setProcessFlowState] = useState([]);
     const [workBreakTimes, setWorkBreakTimes] = useState(null);
+    const [wsMessage, setWsMessage] = useState('');
 
+    let ipcRenderer;
+    if (window.require) {
+      ipcRenderer = window.require('electron').ipcRenderer;
+    }
     useEffect(() => {
         const interval = setInterval(() => {
             const storedProcessFlow = localStorage.getItem('processFlow');
@@ -33,6 +38,30 @@ const Home = () => {
 
         return () => clearInterval(interval);
     }, []);
+
+useEffect(() => {
+  const handleNoPerson = () => {
+    setWsMessage('no_person');
+  };
+
+  window.electron.on('no-person-detected', handleNoPerson);
+
+  return () => {
+    window.electron.removeListener('no-person-detected', handleNoPerson);
+  };
+}, []);
+
+useEffect(() => {
+    const handleToggle = async () => {
+        if (wsMessage === 'no_person' && isRunning) {
+            await toggleTimer('pause'); // Assuming this function pauses the timer
+        } else if (wsMessage !== 'no_person' && !isRunning) {
+            await toggleTimer('resume'); // Assuming this function resumes the timer
+        }
+    };
+
+    handleToggle().catch(error => console.error('Error toggling timer:', error));
+}, [wsMessage, isRunning]);
 
 
     useEffect(() => {

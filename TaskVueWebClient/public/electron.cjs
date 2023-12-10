@@ -1,5 +1,5 @@
 // Importing necessary modules from 'electron'
-const {app, BrowserWindow, Tray, Menu, nativeImage, screen} = require('electron');
+const {app, BrowserWindow, Tray, Menu, nativeImage, screen, ipcMain} = require('electron');
 // 'path' module for handling file paths
 const path = require('path');
 const WebSocket = require('ws');
@@ -26,7 +26,8 @@ function createWindow() {
         resizable: false,
         webPreferences: {
             nodeIntegration: true, // Allows integration with Node.js
-            contextIsolation: false, // Disables context isolation for preload scripts
+            contextIsolation: true, // Disables context isolation for preload scripts
+            preload: path.join(__dirname, 'preload.cjs'),
         },
     });
 
@@ -67,9 +68,14 @@ function createWindow() {
             case 'look_away':
                 body = 'Eyes on the Screen! Staying focused on your task will boost efficiency.';
                 break;
+            case 'no_person':
+                body = 'You are not detected. Stopping timer to start a pause.'
+                win.webContents.send('no-person-detected');
+                break;
             default:
                 body = 'Stay focused!';
         }
+        console.log("WS_MESSAGE: "+data.message)
 
 
         showNotification('Attention', body);

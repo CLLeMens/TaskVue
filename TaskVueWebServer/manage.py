@@ -3,6 +3,8 @@
 import os
 import sys
 
+from TaskVueWebServer.TaskVueProcessing.track import ObjectDetector
+
 
 def main():
     current_directory = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +21,7 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-
+    objectDetector = ObjectDetector.get_instance()
 
 if __name__ == '__main__':
     main()

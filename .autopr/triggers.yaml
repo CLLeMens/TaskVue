@@ -2,8 +2,6 @@
 
 triggers:
   - label_substring: summarize
-    on_issue: false
-    on_pull_request: true
     run: summarize_pr
   - branch_name: main
     run: generate_readme_summaries

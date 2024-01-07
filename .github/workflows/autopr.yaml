@@ -30,7 +30,7 @@ jobs:
         #if [ "$is_collaborator" == "Not Found" ]; then
         #  echo "Label not added by a collaborator. Skipping action."
         #  exit 78
-        fi
+        #fi
     - name: Checkout
       uses: actions/checkout@v2
       with:

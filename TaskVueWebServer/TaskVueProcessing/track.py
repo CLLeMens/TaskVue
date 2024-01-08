@@ -1,5 +1,8 @@
 import datetime
 import json
+import time
+from collections import defaultdict
+
 import cv2
 from ultralytics import YOLO
 import dlib
@@ -7,8 +10,53 @@ import os
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
+#from TaskVueWebServer.TaskVueProcessing.json_helper import JsonFileWriter
+
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
+
+class JsonFileWriter:
+    def __init__(self):
+        self.filename = "track" + ".json"
+        self.create_file()
+        self.last_date = None
+
+
+    def create_file(self):
+        if not os.path.exists(self.filename):
+            with open(self.filename, 'w') as file:
+                json.dump({}, file)
+
+    def write(self, key, value, use_last_date=False):
+        if use_last_date and self.last_date:
+            date = self.last_date
+        else:
+            date = datetime.datetime.now().date().isoformat()
+            self.last_date = date
+
+        data = self.read_json()
+
+        if date in data:
+            data[date][key] = value
+        else:
+            data[date] = {key: value}
+
+        with open(self.filename, 'w') as file:
+            json.dump(data, file, indent=4)
+
+    def read_json(self):
+        with open(self.filename, 'r') as file:
+            return json.load(file)
+
+    def calculate_cumulative_values(self):
+        data = self.read_json()
+        cumulative_values = defaultdict(float)
+
+        for timestamp in data:
+            for key, value in data[timestamp].items():
+                cumulative_values[key] += value
+
+        return dict(cumulative_values)
 
 class StateTimer:
     def __init__(self):
@@ -22,7 +70,7 @@ class StateTimer:
         if self.start_time is None:
             self.start_time = current_time
             self.last_update_time = current_time
-
+    ##todo: create file if not present
     def update_cumulative(self, current_time):
         if self.start_time:
             self.consecutive_time = current_time - self.start_time
@@ -63,6 +111,7 @@ class ObjectDetector:
     def __init__(self, detect_phones=True, detect_persons=True):
         """Initialize the detector with given settings."""
         if not hasattr(self, '_initialized'):  # Avoid reinitialization
+            self.json_helper = JsonFileWriter()
             self.running = False
             self.detect_phones = detect_phones
             self.detect_persons = detect_persons
@@ -77,7 +126,8 @@ class ObjectDetector:
                 'phone': StateTimer(),
                 'drowsy': StateTimer(),
                 'multiple_persons': StateTimer(),
-                'look_away': StateTimer()
+                'look_away': StateTimer(),
+                'no_persons': StateTimer()
             }
 
     def update_timers(self, current_states, current_time):
@@ -93,7 +143,9 @@ class ObjectDetector:
         for state, timer in self.timers.items():
             if timer.get_consecutive_time() > 10:
                 message = f"{state}"
-
+                self.json_helper.write(state, self.timers[message].get_cumulative_time())
+                print(message)
+                print("Sending message to frontend")
                 # Senden der Nachricht an den WebSocket
                 async_to_sync(channel_layer.group_send)(
                     "taskvue_group",  # Gruppenname, den Sie verwenden möchten
@@ -161,6 +213,9 @@ class ObjectDetector:
 
                 drowsy_results = self.drowsy_model(roi, verbose=False)
                 self.process_drowsy_detections(drowsy_results, roi, current_states)
+
+            if num_persons == 0:
+                current_states.append('no_persons')
 
             if num_persons > 1:
                 current_states.append('multiple_persons')

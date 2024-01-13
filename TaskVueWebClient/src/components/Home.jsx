@@ -387,7 +387,6 @@ const Home = () => {
                             }}>
                                 <li>Distraction-Detection</li>
                                 <li>Fatigue-Detection</li>
-                                <li>Input-Monitoring</li>
                             </ul>
                             <ul style={{
                                 listStyle: 'none',
@@ -404,10 +403,6 @@ const Home = () => {
                                 <Tag color={information && information.settings[0].fatigue ? 'green' : 'red'}
                                      style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>
                                     {information && information.settings[0].fatigue ? 'Active' : 'Inactive'}
-                                </Tag>
-                                <Tag color={information && information.settings[0].key_mouse ? 'green' : 'red'}
-                                     style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>
-                                    {information && information.settings[0].key_mouse ? 'Active' : 'Inactive'}
                                 </Tag>
                             </ul>
                         </div>

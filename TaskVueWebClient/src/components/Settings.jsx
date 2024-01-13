@@ -313,9 +313,6 @@ const Settings = () => {
                             Track Smartphone
                         </div>
                         <div>
-                            Track keystrokes and mouse movement
-                        </div>
-                        <div>
                             Tracking grade
                         </div>
                     </div>
@@ -335,9 +332,6 @@ const Settings = () => {
                                 style={{width: '45px', marginLeft: 'auto'}}/>
                         <Switch checked={editedData.isTrackSmartphoneOn}
                                 onChange={e => handleInputChange('isTrackSmartphoneOn', e)}
-                                style={{width: '45px', marginLeft: 'auto'}}/>
-                         <Switch checked={editedData.isTrackKeyMouseOn}
-                                onChange={e => handleInputChange('isTrackKeyMouseOn', e)}
                                 style={{width: '45px', marginLeft: 'auto'}}/>
                         <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', width: '300px'}}>
                             <Slider

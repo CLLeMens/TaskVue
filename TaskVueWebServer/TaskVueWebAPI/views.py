@@ -8,7 +8,7 @@ import datetime
 from isoweek import Week
 from threading import Thread
 from TaskVueProcessing.track import ObjectDetector
-
+import os
 
 
 class GetThemeView(APIView):
@@ -419,3 +419,24 @@ class TimerView(APIView):
                 global_detector_thread.join()
 
         return Response({}, status=status.HTTP_200_OK)
+
+
+
+class TrackJSONView(APIView):
+    def get(self, request):
+        try:
+            # Assuming track.json is in the same directory as manage.py
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            file_path = os.path.join(base_dir, 'track.json')
+
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+
+            today = datetime.datetime.now().strftime('%Y-%m-%d')
+            today_data = data.get(today, {})
+
+            return Response(today_data)
+        except FileNotFoundError:
+            return Response({'error': 'track.json not found'}, status=status.HTTP_404_NOT_FOUND)
+        except json.JSONDecodeError:
+            return Response({'error': 'Invalid JSON in track.json'}, status=status.HTTP_400_BAD_REQUEST)

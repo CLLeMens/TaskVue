@@ -13,3 +13,5 @@ export const PROCESSFLOW = BASE_URL + "process-flow/"
 export const PROCESSFLOW_WEEK = BASE_URL + "process-flow-week/"
 
 export const TIMER = BASE_URL + "timer/"
+
+export const TRACKJSON = BASE_URL + "trackJSON/"

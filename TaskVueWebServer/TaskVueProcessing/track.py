@@ -10,7 +10,7 @@ import os
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
 
-#from TaskVueWebServer.TaskVueProcessing.json_helper import JsonFileWriter
+# from TaskVueWebServer.TaskVueProcessing.json_helper import JsonFileWriter
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -21,13 +21,12 @@ class JsonFileWriter:
         self.create_file()
         self.last_date = None
 
-
     def create_file(self):
         if not os.path.exists(self.filename):
             with open(self.filename, 'w') as file:
                 json.dump({}, file)
 
-    def write(self, key, value, use_last_date=False):
+    def write(self, key, value, start_time, stop_time, use_last_date=False):
         if use_last_date and self.last_date:
             date = self.last_date
         else:
@@ -37,16 +36,41 @@ class JsonFileWriter:
         data = self.read_json()
 
         if date in data:
-            data[date][key] = value
+            if key in data[date]:
+                if data[date][key][-1]["Start time"] == start_time:
+                    data[date][key][-1]["Stop time"] = stop_time
+                    data[date][key][-1]["Current cumulative time"] = value
+                else:
+                    data[date][key].append({
+                        "Start time": start_time,
+                        "Stop time": stop_time,
+                        "Current cumulative time": value
+                    })
+            else:
+                data[date][key] = [{
+                    "Start time": start_time,
+                    "Stop time": stop_time,
+                    "Current cumulative time": value
+                }]
         else:
-            data[date] = {key: value}
+            data[date] = {
+                key: [{
+                    "Start time": start_time,
+                    "Stop time": stop_time,
+                    "Current cumulative time": value
+                }]
+            }
 
         with open(self.filename, 'w') as file:
             json.dump(data, file, indent=4)
 
     def read_json(self):
-        with open(self.filename, 'r') as file:
-            return json.load(file)
+        try:
+            with open(self.filename, 'r') as file:
+                return json.load(file)
+        except (FileNotFoundError, ValueError):
+            print("No json entries found, skipping...")
+            return {}
 
     def calculate_cumulative_values(self):
         data = self.read_json()
@@ -58,10 +82,12 @@ class JsonFileWriter:
 
         return dict(cumulative_values)
 
+
 class StateTimer:
     def __init__(self):
         self.start_time = None
         self.last_update_time = None
+        self.local_start_time = None
         self.cumulative_time = datetime.timedelta(0)
         self.consecutive_time = datetime.timedelta(0)
         self.has_exceeded_threshold = False
@@ -70,7 +96,10 @@ class StateTimer:
         if self.start_time is None:
             self.start_time = current_time
             self.last_update_time = current_time
-    ##todo: create file if not present
+
+    # vor update last update time als start time setzen
+
+    # todo: create file if not present
     def update_cumulative(self, current_time):
         if self.start_time:
             self.consecutive_time = current_time - self.start_time
@@ -95,6 +124,9 @@ class StateTimer:
     def get_cumulative_time(self):
         return self.cumulative_time.total_seconds()
 
+    def setLocalStartTime(self, current_time):
+        self.local_start_time = current_time
+
     def get_consecutive_time(self):
         return self.consecutive_time.total_seconds()
 
@@ -116,7 +148,7 @@ class ObjectDetector:
             self.detect_phones = detect_phones
             self.detect_persons = detect_persons
             self.face_detector = dlib.get_frontal_face_detector()
-            self.last_detection_time = None
+            self.first_detection_time = None
             self.group = []
             self.file = None
             self._initialized = True
@@ -142,8 +174,12 @@ class ObjectDetector:
         channel_layer = get_channel_layer()
         for state, timer in self.timers.items():
             if timer.get_consecutive_time() > 10:
+                if timer.local_start_time is None:
+                    timer.setLocalStartTime(datetime.datetime.now())
                 message = f"{state}"
-                self.json_helper.write(state, self.timers[message].get_cumulative_time())
+                self.json_helper.write(state, self.timers[message].get_cumulative_time(),
+                                       start_time=timer.local_start_time.strftime("%H:%M:%S"),
+                                       stop_time=datetime.datetime.now().strftime("%H:%M:%S"))
                 print(message)
                 print("Sending message to frontend")
                 # Senden der Nachricht an den WebSocket
@@ -154,6 +190,10 @@ class ObjectDetector:
                         "message": message
                     }
                 )
+            else:
+                if timer.local_start_time is not None:
+                    timer.setLocalStartTime(None)
+                    print("Reset StartTime for: " + state)
 
     def cleanup(self):
         """Clean up the JSON file by removing the last comma."""

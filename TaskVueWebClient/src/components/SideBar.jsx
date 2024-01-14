@@ -66,8 +66,11 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
     useEffect(() => {
         const interval = setInterval(() => {
             const currentProcessFlow = localStorage.getItem('processFlow');
-            if (currentProcessFlow !== today) {
-                const preparedProcessFlow = JSON.parse(currentProcessFlow);
+            const preparedProcessFlow = JSON.parse(currentProcessFlow);
+            if (!deepCompareArrays(calculatePeriods(preparedProcessFlow), today)) {
+                console.log(calculatePeriods(preparedProcessFlow))
+                console.log(today)
+
                 const periods = calculatePeriods(preparedProcessFlow);
                 setToday(periods);
             }
@@ -95,116 +98,130 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
     }, []);
 
 
-        function formatTime(timeString) {
-            return timeString.substring(0, 5);
+    function formatTime(timeString) {
+        return timeString.substring(0, 5);
+    }
+
+    const deepCompareArrays = (arr1, arr2) => {
+        if (arr1.length !== arr2.length) {
+            return false;
         }
 
-
-        function calculatePeriods(data) {
-            let periods = [];
-            let lastTime = null;
-            let lastProcess = null;
-            if (data.length % 2 !== 0) {
-                data.pop();
+        for (let i = 0; i < arr1.length; i++) {
+            if (arr1[i].time !== arr2[i].time || arr1[i].title !== arr2[i].title || arr1[i].color !== arr2[i].color) {
+                return false;
             }
-
-            data.forEach(item => {
-                if (lastTime) {
-                    let periodType = lastProcess === 'start' ? 'Work' : 'Break';
-                    let color = periodType === 'Work' ? 'rgba(126,211,127,0.80)' : 'rgba(85, 100, 255, 0.8)';
-                    periods.push({
-                        time: `${formatTime(lastTime)} - ${formatTime(item.time)}`,
-                        title: periodType,
-                        color: color
-                    });
-                }
-                lastTime = item.time;
-                lastProcess = item.process;
-            });
-
-            return periods;
         }
 
-
-        return (
-            <Layout>
-                <Sider
-                    width={300}
-                    style={{
-                        height: '100vh',
-                        minWidth: '300px',
-                        position: 'fixed',
-                        left: 0,
-                        top: 0,
-                        backgroundColor: theme === 'dark' ? '#2b2b2d' : '#f4f4f6',
-                        transition: 'background-color 0.4s ease, color 0.4s ease',
-                    }}
-                >
-                    <Space
-                        direction="vertical"
-                        size={50}
-                        style={{width: '100%'}}
-                    >
-                        <div style={{display: 'flex', alignItems: 'center', margin: '16px'}}>
-                            <Avatar size="large" icon={<UserOutlined/>}/>
-                            <span
-                                style={{marginLeft: '10px', color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)'}}>
-                            {JSON.parse(localStorage.getItem('userName'))}
-                        </span>
-                        </div>
-
-                        <Menu
-                            onClick={(item) => onMenuSelect(item.key)}
-                            theme={theme}
-                            style={{
-                                transition: 'background-color 0.4s ease, color 0.4s ease',
-                                backgroundColor: theme === 'dark' ? '#2b2b2d' : '#f4f4f6',
-                                textAlign: 'left',
-                                fontSize: {iconStyle},
-                            }}
-                            mode="inline" defaultSelectedKeys={[selectedItem]}
-                            items={sidebaritems.map(item => ({
-                                ...item,
-                                style: {
-
-                                    padding: '22px 10px',
-                                }
-                            }))}
-
-                        />
-                        <div>
-                            <Paragraph style={{
-                                color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',
-                                textAlign: 'left',
-                                marginLeft: '14px',
-                                fontWeight: 'bold',
-                                letterSpacing: '.1rem'
-                            }}>TODAY</Paragraph>
-                            <div className="custom-events">
-                                {today && today.map((event, index) => (
-                                    <div key={index} className="event-item" style={{position: 'relative'}}>
-                                        {/* Farbe wird nun über CSS gesetzt */}
-                                        <span className="event-dot" style={{backgroundColor: event.color}}></span>
-                                        <Text strong
-                                              style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',}}>{event.title}</Text>
-                                        <Text className="event-time"
-                                              style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',}}>{event.time}</Text>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                    </Space>
-                    <Paragraph style={{
-                        color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',
-                        position: 'absolute',
-                        bottom: '0px',
-                        left: '16px'
-                    }}>© 2023 TaskVue</Paragraph>
-                </Sider>
-
-            </Layout>
-        );
+        return true;
     };
 
-    export default SideBar;
+
+    function calculatePeriods(data) {
+        let periods = [];
+        let lastTime = null;
+        let lastProcess = null;
+        if (data.length % 2 !== 0) {
+            data.pop();
+        }
+
+        data.forEach(item => {
+            if (lastTime) {
+                let periodType = lastProcess === 'start' ? 'Work' : 'Break';
+                let color = periodType === 'Work' ? 'rgba(126,211,127,0.80)' : 'rgba(85, 100, 255, 0.8)';
+                periods.push({
+                    time: `${formatTime(lastTime)} - ${formatTime(item.time)}`,
+                    title: periodType,
+                    color: color
+                });
+            }
+            lastTime = item.time;
+            lastProcess = item.process;
+        });
+
+        return periods;
+    }
+
+
+    return (
+        <Layout>
+            <Sider
+                width={300}
+                style={{
+                    height: '100vh',
+                    minWidth: '300px',
+                    position: 'fixed',
+                    left: 0,
+                    top: 0,
+                    backgroundColor: theme === 'dark' ? '#2b2b2d' : '#f4f4f6',
+                    transition: 'background-color 0.4s ease, color 0.4s ease',
+                }}
+            >
+                <Space
+                    direction="vertical"
+                    size={50}
+                    style={{width: '100%'}}
+                >
+                    <div style={{display: 'flex', alignItems: 'center', margin: '16px'}}>
+                        <Avatar size="large" icon={<UserOutlined/>}/>
+                        <span
+                            style={{marginLeft: '10px', color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)'}}>
+                            {JSON.parse(localStorage.getItem('userName'))}
+                        </span>
+                    </div>
+
+                    <Menu
+                        onClick={(item) => onMenuSelect(item.key)}
+                        theme={theme}
+                        style={{
+                            transition: 'background-color 0.4s ease, color 0.4s ease',
+                            backgroundColor: theme === 'dark' ? '#2b2b2d' : '#f4f4f6',
+                            textAlign: 'left',
+                            fontSize: {iconStyle},
+                        }}
+                        mode="inline" defaultSelectedKeys={[selectedItem]}
+                        items={sidebaritems.map(item => ({
+                            ...item,
+                            style: {
+
+                                padding: '22px 10px',
+                            }
+                        }))}
+
+                    />
+                    <div>
+                        <Paragraph style={{
+                            color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',
+                            textAlign: 'left',
+                            marginLeft: '14px',
+                            fontWeight: 'bold',
+                            letterSpacing: '.1rem'
+                        }}>TODAY</Paragraph>
+                        <div className="custom-events">
+                            {today && today.map((event, index) => (
+                                <div key={index} className="event-item" style={{position: 'relative'}}>
+                                    {/* Farbe wird nun über CSS gesetzt */}
+                                    <span className="event-dot" style={{backgroundColor: event.color}}></span>
+                                    <Text strong
+                                          style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',}}>{event.title}</Text>
+                                    <Text className="event-time"
+                                          style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',}}>{event.time}</Text>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                </Space>
+                <Paragraph style={{
+                    color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',
+                    position: 'absolute',
+                    bottom: '0px',
+                    left: '16px'
+                }}>© 2023 TaskVue</Paragraph>
+            </Sider>
+
+        </Layout>
+    );
+};
+
+export default SideBar;

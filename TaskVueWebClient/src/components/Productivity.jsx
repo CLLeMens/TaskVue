@@ -82,7 +82,7 @@ const Productivity = ({week}) => {
             }
         }
         fetchData()
-    }, []);
+    }, [currentDate]);
 
 
     const handleWeekChange = async (date) => {

@@ -12,4 +12,6 @@ urlpatterns = [
     path('user-goals/', views.UserGoalsView.as_view(), name='user-goals'),
     path('timer/', views.TimerView.as_view(), name='timer'),
     path('trackJSON/', views.TrackJSONView.as_view(), name='trackJSON'),
+    path('track-week/', views.TrackWeekView.as_view(), name='trackWeek'),
+    path('month-scores/', views.MonthScoreView.as_view(), name='monthScore'),
 ]

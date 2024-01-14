@@ -9,6 +9,7 @@ from isoweek import Week
 from threading import Thread
 from TaskVueProcessing.track import ObjectDetector
 import os
+import calendar
 
 
 class GetThemeView(APIView):
@@ -30,15 +31,14 @@ class GetHomeInformationView(APIView):
             fatigue = user_settings.track_fatigue
             other_people = user_settings.track_other_people
             smartphone = user_settings.track_smartphone
-            key_mouse = user_settings.track_key_mouse
+            distractions = user_settings.track_distraction
 
-            distraction = other_people or smartphone
-
-            settings.append({'fatigue': fatigue, 'distraction': distraction, 'key_mouse': key_mouse})
+            settings.append({'fatigue': fatigue, 'smartphone': smartphone, 'distractions': distractions, 'other_people': other_people})
 
 
         except UserSettings.DoesNotExist:
-            settings.append({'fatigue': None, 'distraction': None, 'key_mouse': None})
+            settings.append({'fatigue': None, 'smartphone': None, 'distractions': None, 'other_people': None})
+
         try:
             user_goals = UserGoals.objects.get()
             today = datetime.datetime.now().strftime("%A")
@@ -118,9 +118,7 @@ class ProcessFlowWeekView(APIView):
     def get(self, request):
         year_week = request.GET.get('date', '')  # Standardwert ist ein leerer String
         year, week = map(int, year_week.split('-'))
-
         monday = Week(year, week).monday()
-
 
         process_flows_list = []
 
@@ -139,8 +137,38 @@ class ProcessFlowWeekView(APIView):
                     process_flows_list.append(work_break_data)
             else:
                 process_flows_list.append({'work': 0, 'break': 0})
-        print(process_flows_list)
         return Response(process_flows_list, status=status.HTTP_200_OK)
+
+
+class TrackWeekView(APIView):
+    def get(self, request):
+        year_week = request.GET.get('date', '')
+        year, week = map(int, year_week.split('-'))
+
+        monday = Week(year, week).monday()
+
+        track_data_list = []
+
+        try:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            file_path = os.path.join(base_dir, 'track.json')
+
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+
+            for i in range(7):
+                day = monday + datetime.timedelta(days=i)
+                day_str = day.strftime("%Y-%m-%d")  # Konvertiert das Datum in einen String
+
+                day_data = data.get(day_str, {})  # Verwendet den String als Schlüssel
+
+                if day_data == {} or not day_data:
+                    day_data = []
+                track_data_list.append(day_data)
+
+        except FileNotFoundError:
+            return Response({'error': 'track.json not found'}, status=status.HTTP_404_NOT_FOUND)
+        return Response(track_data_list)
 
 
 # Create your views here.
@@ -156,14 +184,10 @@ class UserSettingsView(APIView):
                 'name': None,
                 'notifications': True,
                 'theme': 'system',
-                'stand_up_reminder': False,
-                'break_reminder': False,
-                'productivity_reminder': False,
-                'positive_feedback_reminder': False,
                 'track_fatigue': False,
                 'track_other_people': False,
                 'track_smartphone': False,
-                'track_key_mouse': False,
+                'track_distractions': False,
                 'tracking_grade': 0.7
 
             }
@@ -175,15 +199,14 @@ class UserSettingsView(APIView):
         name = request.data.get('name')
         notifications = request.data.get('isNotificationsOn')
         theme = request.data.get('appTheme')
-        stand_up_reminder = request.data.get('isStandUpReminderOn')
-        break_reminder = request.data.get('isBreakReminderOn')
-        productivity_reminder = request.data.get('isStayProductiveReminderOn')
-        positive_feedback_reminder = request.data.get('isPositiveFeedbackOn')
         track_fatigue = request.data.get('isTrackFatigueOn')
         track_other_people = request.data.get('isTrackOtherPeopleOn')
         track_smartphone = request.data.get('isTrackSmartphoneOn')
-        track_key_mouse = request.data.get('isTrackKeyMouseOn')
+        track_distractions = request.data.get('isDistracted')
         tracking_grade = request.data.get('trackingGrade')
+
+
+        print("TRACKKKKKK: ", track_distractions)
 
         # try to get the settings
         try:
@@ -197,14 +220,10 @@ class UserSettingsView(APIView):
         # set the data
         settings.name = name
         settings.notifications = notifications
-        settings.stand_up_reminder = stand_up_reminder
-        settings.break_reminder = break_reminder
-        settings.productivity_reminder = productivity_reminder
-        settings.positive_feedback_reminder = positive_feedback_reminder
         settings.track_fatigue = track_fatigue
         settings.track_other_people = track_other_people
         settings.track_smartphone = track_smartphone
-        settings.track_key_mouse = track_key_mouse
+        settings.track_distraction = track_distractions
         settings.tracking_grade = tracking_grade
 
         # check if settings.theme is equal to theme
@@ -395,6 +414,7 @@ class UserGoalsView(APIView):
 global_detector = None
 global_detector_thread = None
 
+
 class TimerView(APIView):
 
     def get(self, request):
@@ -421,7 +441,6 @@ class TimerView(APIView):
         return Response({}, status=status.HTTP_200_OK)
 
 
-
 class TrackJSONView(APIView):
     def get(self, request):
         try:
@@ -440,3 +459,131 @@ class TrackJSONView(APIView):
             return Response({'error': 'track.json not found'}, status=status.HTTP_404_NOT_FOUND)
         except json.JSONDecodeError:
             return Response({'error': 'Invalid JSON in track.json'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+def calculate_performance_score(actual_work, target_work, actual_break, target_break, actual_distraction,
+                                max_distraction, weight_work=0.5, weight_break=0.2, weight_distraction=0.3):
+
+    print(actual_work, target_work, actual_break, target_break, actual_distraction, max_distraction)
+
+    # check if targets are None
+    if target_work is None:
+        target_work = 0
+    if target_break is None:
+        target_break = 0
+    if max_distraction is None:
+        max_distraction = 0
+
+    # Verhältnisse berechnen
+
+    if target_work == 0 and actual_work > 0:
+        work_ratio = 1
+    else:
+        work_ratio = min(actual_work / target_work, 1)
+
+    if target_break == 0 and actual_break > 0:
+        break_ratio = 0
+    else:
+        break_ratio = min(actual_break / target_break, 1)
+
+    distraction_ratio = min(1, max_distraction / actual_distraction) if actual_distraction != 0 else 1
+
+    # Gesamtscore berechnen
+    score = (weight_work * work_ratio) + (weight_break * break_ratio) + (weight_distraction * distraction_ratio)
+    return score
+
+
+def calculate_total_distraction_time(track_data):
+    total_seconds = 0
+
+    for category in track_data.values():
+        for event in category:
+            start_time = datetime.datetime.strptime(event['Start time'], '%H:%M:%S')
+            stop_time = datetime.datetime.strptime(event['Stop time'], '%H:%M:%S')
+
+            # Berechnen Sie die Differenz in Sekunden und addieren Sie sie zur Gesamtzeit
+            duration = (stop_time - start_time).total_seconds()
+            total_seconds += duration
+    total_hours = total_seconds / 3600
+    return total_hours
+
+class MonthScoreView(APIView):
+    def get(self, request):
+        year_month = request.GET.get('date', '')
+        year, month = map(int, year_month.split('-'))
+
+        # get user goals
+        try:
+            user_goals = UserGoals.objects.get()
+        except UserGoals.DoesNotExist:
+            return Response({'error': 'user goals not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Bestimmen Sie die Anzahl der Tage im Monat
+        num_days = calendar.monthrange(year, month)[1]
+
+        # Generiere eine Liste aller Tage im Monat
+        days_of_month = [datetime.date(year, month, day) for day in range(1, num_days + 1)]
+
+        scores = []
+
+        # get track data
+        try:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            file_path = os.path.join(base_dir, 'track.json')
+
+            with open(file_path, 'r') as file:
+                data = json.load(file)
+
+
+        except FileNotFoundError:
+            return Response({'error': 'track.json not found'}, status=status.HTTP_404_NOT_FOUND)
+
+
+        # Ausgabe der Liste
+        for date in days_of_month:
+
+            # get process flow
+            try:
+                process_flow = ProcessFlow.objects.get(date=date).get_data()
+                corrected_process_flow = process_flow.replace("'", '"')
+                process_flow_data = json.loads(corrected_process_flow)
+
+            except ProcessFlow.DoesNotExist:
+                process_flow_data = []
+
+            date_str = date.strftime("%Y-%m-%d")
+            track_data = data.get(date_str)
+
+            if process_flow_data != []:
+
+
+
+                work_break = calculate_work_and_break_time(process_flow_data)
+
+                # trenne work und break time
+                actual_work = work_break['work']
+                actual_break = work_break['break']
+
+                if track_data:
+                    actual_distractions = calculate_total_distraction_time(track_data)
+                else:
+                    actual_distractions = 0
+
+                # get weekday
+                weekday = date.strftime("%A").lower()
+
+                # get goals for the day
+                target_work = getattr(user_goals, f'{weekday}_workload')
+                target_break = getattr(user_goals, f'{weekday}_breaks')
+                target_distraction = getattr(user_goals, f'{weekday}_distractions')
+
+                # calculate score
+                score = calculate_performance_score(actual_work, target_work, actual_break, target_break,
+                                                    actual_distractions, target_distraction)
+
+                scores.append(score)
+
+            else:
+                scores.append(-1)
+
+        return Response(scores, status=status.HTTP_200_OK)

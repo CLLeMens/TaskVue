@@ -21,11 +21,7 @@ const Settings = () => {
         isTrackFatigueOn: null,
         isTrackOtherPeopleOn: null,
         isTrackSmartphoneOn: null,
-        isStandUpReminderOn: null,
-        isBreakReminderOn: null,
-        isStayProductiveReminderOn: null,
-        isPositiveFeedbackOn: null,
-        isTrackKeyMouseOn: null,
+        isDistracted: null,
         trackingGrade: null,
     });
 
@@ -36,11 +32,7 @@ const Settings = () => {
         isTrackFatigueOn: null,
         isTrackOtherPeopleOn: null,
         isTrackSmartphoneOn: null,
-        isStandUpReminderOn: null,
-        isBreakReminderOn: null,
-        isStayProductiveReminderOn: null,
-        isPositiveFeedbackOn: null,
-        isTrackKeyMouseOn: null,
+        isDistracted: null,
         trackingGrade: null,
     });
 
@@ -56,11 +48,7 @@ const Settings = () => {
                     isTrackFatigueOn: response.track_fatigue,
                     isTrackOtherPeopleOn: response.track_other_people,
                     isTrackSmartphoneOn: response.track_smartphone,
-                    isStandUpReminderOn: response.stand_up_reminder,
-                    isBreakReminderOn: response.break_reminder,
-                    isStayProductiveReminderOn: response.productivity_reminder,
-                    isPositiveFeedbackOn: response.positive_feedback_reminder,
-                    isTrackKeyMouseOn: response.track_key_mouse,
+                    isDistracted: response.track_distraction,
                     trackingGrade: response.tracking_grade,
                 });
 
@@ -71,11 +59,7 @@ const Settings = () => {
                     isTrackFatigueOn: response.track_fatigue,
                     isTrackOtherPeopleOn: response.track_other_people,
                     isTrackSmartphoneOn: response.track_smartphone,
-                    isStandUpReminderOn: response.stand_up_reminder,
-                    isBreakReminderOn: response.break_reminder,
-                    isStayProductiveReminderOn: response.productivity_reminder,
-                    isPositiveFeedbackOn: response.positive_feedback_reminder,
-                    isTrackKeyMouseOn: response.track_key_mouse,
+                    isDistracted: response.track_distraction,
                     trackingGrade: response.tracking_grade,
                 });
 
@@ -95,7 +79,6 @@ const Settings = () => {
 
 
     const handleInputChange = (name, value) => {
-        console.log(name, value);
         if (name === 'isNotificationsOn' && value) {
             const permission = requestNotificationPermission();
             if (!permission) {
@@ -226,10 +209,10 @@ const Settings = () => {
                         marginRight: '45px',
 
                     }}>
-                       <Input
-                           value={editedData.name}
+                        <Input
+                            value={editedData.name}
                             onChange={e => handleInputChange('name', e.target.value)}
-                           style={{minWidth: '250px'}}/>
+                            style={{minWidth: '250px'}}/>
 
                         <Switch style={{width: '45px', marginLeft: 'auto'}} checked={editedData.isNotificationsOn}
                                 onChange={e => handleInputChange('isNotificationsOn', e)}/>
@@ -247,52 +230,6 @@ const Settings = () => {
                     </div>
 
                 </div>
-                {editedData.isNotificationsOn && (
-                    <div>
-                        <Title level={4} style={getTextStyle()}>Notifications</Title>
-                        <div className={'notifications-wrapper'}
-                             style={{
-                                 ...getTextStyle(),
-                                 display: 'flex',
-                                 flexDirection: 'row',
-                                 gap: '30px',
-                                 marginBottom: '65px',
-                                 minWidth: '100%'
-                             }}>
-                            <div style={{display: 'flex', flexDirection: 'column', gap: "30px"}}>
-                                <div>Reminder to stand up</div>
-
-
-                                <div>Reminder to take breaks</div>
-
-
-                                <div>Reminder to stay productive</div>
-
-
-                                <div>Positive Feedback</div>
-                            </div>
-
-                            <div style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: "30px",
-                                marginLeft: 'auto',
-                                marginRight: '45px',
-                                width: '45px'
-                            }}>
-                                <Switch checked={editedData.isStandUpReminderOn}
-                                        onChange={e => handleInputChange('isStandUpReminderOn', e)}/>
-                                <Switch checked={editedData.isBreakReminderOn}
-                                        onChange={e => handleInputChange('isBreakReminderOn', e)}/>
-                                <Switch checked={editedData.isStayProductiveReminderOn}
-                                        onChange={e => handleInputChange('isStayProductiveReminderOn', e)}/>
-                                <Switch checked={editedData.isPositiveFeedbackOn}
-                                        onChange={e => handleInputChange('isPositiveFeedbackOn', e)}/>
-                            </div>
-
-                        </div>
-                    </div>
-                )}
                 <Title level={4} style={getTextStyle()}>Tracking</Title>
                 <div className={'tracking-wrapper'}
                      style={{
@@ -304,13 +241,16 @@ const Settings = () => {
                      }}>
                     <div style={{display: 'flex', flexDirection: 'column', gap: "30px"}}>
                         <div>
-                            Track fatigue
+                            Track drowziness
                         </div>
                         <div>
                             Track other people
                         </div>
                         <div>
                             Track Smartphone
+                        </div>
+                        <div>
+                            Track Distraction
                         </div>
                         <div>
                             Tracking grade
@@ -332,6 +272,9 @@ const Settings = () => {
                                 style={{width: '45px', marginLeft: 'auto'}}/>
                         <Switch checked={editedData.isTrackSmartphoneOn}
                                 onChange={e => handleInputChange('isTrackSmartphoneOn', e)}
+                                style={{width: '45px', marginLeft: 'auto'}}/>
+                        <Switch checked={editedData.isDistracted}
+                                onChange={e => handleInputChange('isDistracted', e)}
                                 style={{width: '45px', marginLeft: 'auto'}}/>
                         <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column', width: '300px'}}>
                             <Slider

@@ -316,6 +316,25 @@ const Home = () => {
         return {work: workTimeHours, break: breakTimeHours};
     }
 
+    function calculateTotalHours(events) {
+        let totalSeconds = 0;
+
+        events.forEach(event => {
+            const [startTime, endTime] = event.time.split(' - ');
+            const [startHours, startMinutes] = startTime.split(':').map(Number);
+            const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+            const startTotalSeconds = startHours * 3600 + startMinutes * 60;
+            const endTotalSeconds = endHours * 3600 + endMinutes * 60;
+
+            // Berechne die Differenz in Sekunden
+            totalSeconds += endTotalSeconds - startTotalSeconds;
+        });
+
+        // Umwandlung der Gesamtzeit von Sekunden in Stunden
+        return totalSeconds / 3600;
+    }
+
 
     return (
 
@@ -385,8 +404,11 @@ const Home = () => {
                                 flexDirection: 'column',
                                 gap: '20px'
                             }}>
+                                <li>Smartphone-Detection</li>
+                                <li>Drowziness-Detection</li>
                                 <li>Distraction-Detection</li>
-                                <li>Fatigue-Detection</li>
+                                <li>Other People-Detection</li>
+
                             </ul>
                             <ul style={{
                                 listStyle: 'none',
@@ -395,14 +417,24 @@ const Home = () => {
                                 flexDirection: 'column',
                                 gap: '20px'
                             }}>
-                                <Tag color={information && information.settings[0].distraction ? 'green' : 'red'}
+                                <Tag color={information && information.settings[0].smartphone ? 'green' : 'red'}
                                      style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>
-                                    {information && information.settings[0].distraction ? 'Active' : 'Inactive'}
+                                    {information && information.settings[0].smartphone ? 'Active' : 'Inactive'}
                                 </Tag>
 
                                 <Tag color={information && information.settings[0].fatigue ? 'green' : 'red'}
                                      style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>
                                     {information && information.settings[0].fatigue ? 'Active' : 'Inactive'}
+                                </Tag>
+
+                                <Tag color={information && information.settings[0].distractions ? 'green' : 'red'}
+                                     style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>
+                                    {information && information.settings[0].distractions ? 'Active' : 'Inactive'}
+                                </Tag>
+
+                                <Tag color={information && information.settings[0].other_people ? 'green' : 'red'}
+                                     style={{textAlign: 'center', fontSize: '13px', fontWeight: 'bold'}}>
+                                    {information && information.settings[0].other_people ? 'Active' : 'Inactive'}
                                 </Tag>
                             </ul>
                         </div>
@@ -442,7 +474,7 @@ const Home = () => {
                                 <li>{workBreakTimes && parseFloat(workBreakTimes.break) + parseFloat((pauseDuration / 3600).toFixed(2))}h
                                     / {information && information.goals[0].breaks}h
                                 </li>
-                                <li>1.2h / {information && information.goals[0].distractions}h</li>
+                                <li>{calculateTotalHours(JSON.parse(localStorage.getItem('distractions'))).toFixed(2)} / {information && information.goals[0].distractions}h</li>
                             </ul>
                         </div>
 

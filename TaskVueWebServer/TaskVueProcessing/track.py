@@ -26,7 +26,7 @@ class JsonFileWriter:
             with open(self.filename, 'w') as file:
                 json.dump({}, file)
 
-    def write(self, key, value, start_time, stop_time, use_last_date=False):
+    def write(self, key, start_time, stop_time, use_last_date=False):
         if use_last_date and self.last_date:
             date = self.last_date
         else:
@@ -39,25 +39,21 @@ class JsonFileWriter:
             if key in data[date]:
                 if data[date][key][-1]["Start time"] == start_time:
                     data[date][key][-1]["Stop time"] = stop_time
-                    data[date][key][-1]["Current cumulative time"] = value
                 else:
                     data[date][key].append({
                         "Start time": start_time,
                         "Stop time": stop_time,
-                        "Current cumulative time": value
                     })
             else:
                 data[date][key] = [{
                     "Start time": start_time,
                     "Stop time": stop_time,
-                    "Current cumulative time": value
                 }]
         else:
             data[date] = {
                 key: [{
                     "Start time": start_time,
                     "Stop time": stop_time,
-                    "Current cumulative time": value
                 }]
             }
 
@@ -177,7 +173,7 @@ class ObjectDetector:
                 if timer.local_start_time is None:
                     timer.setLocalStartTime(datetime.datetime.now())
                 message = f"{state}"
-                self.json_helper.write(state, self.timers[message].get_cumulative_time(),
+                self.json_helper.write(state,
                                        start_time=timer.local_start_time.strftime("%H:%M:%S"),
                                        stop_time=datetime.datetime.now().strftime("%H:%M:%S"))
                 print(message)

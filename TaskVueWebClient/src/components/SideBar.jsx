@@ -18,8 +18,10 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
     const {theme, toggleTheme} = useTheme();
     const [today, setToday] = useState(null);
     const [userName, setUserName] = useState(JSON.parse(localStorage.getItem('userName')));
-
+    const [lastProcess, setLastProcess] = useState([]);
+    const [distractions, setDistractions] = useState([]); // Array mit allen Distractions
     const iconStyle = {fontSize: '18px'}; // Definieren Sie einen gemeinsamen Stil für alle Icons
+
 
     const sidebaritems = [
         {key: 'dashboard', icon: <DashboardOutlined style={iconStyle}/>, label: 'Dashboard'},
@@ -67,12 +69,11 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         const interval = setInterval(() => {
             const currentProcessFlow = localStorage.getItem('processFlow');
             const preparedProcessFlow = JSON.parse(currentProcessFlow);
-            if (!deepCompareArrays(calculatePeriods(preparedProcessFlow), today)) {
-                console.log(calculatePeriods(preparedProcessFlow))
-                console.log(today)
-
+            if (!deepCompareArrays(calculatePeriods(preparedProcessFlow), calculatePeriods(lastProcess))) {
                 const periods = calculatePeriods(preparedProcessFlow);
                 setToday(periods);
+                setLastProcess(preparedProcessFlow);
+
             }
         }, 1000);
 
@@ -84,7 +85,14 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         const fetchData = async () => {
             try {
                 const response = await makeRequest('GET', TRACKJSON);
-                console.log(response);
+
+                const distractions = mergeDistractions(response);
+
+                setDistractions(distractions)
+
+                localStorage.setItem('distractions', JSON.stringify(distractions));
+
+
             } catch (e) {
                 console.log(e);
             }
@@ -92,10 +100,27 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
 
         fetchData(); // Call it immediately on component mount
 
-        const interval = setInterval(fetchData, 10000); // Call it every 10 seconds
+        const interval = setInterval(fetchData, 1000);
 
         return () => clearInterval(interval); // Clear interval on component unmount
-    }, []);
+    }, [today]);
+
+
+    const mergeDistractions = (newContent) => {
+        const distractions = [];
+
+        for (const key in newContent) {
+            newContent[key].forEach(({'Start time': startTime, 'Stop time': stopTime}) => {
+                distractions.push({
+                    time: `${startTime.substring(0, 5)} - ${stopTime.substring(0, 5)}`,
+                    title: 'Distractions',
+                    color: 'rgba(240, 128, 128, 0.8)'
+                });
+            });
+        }
+
+        return distractions;
+    };
 
 
     function formatTime(timeString) {
@@ -141,6 +166,38 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
 
         return periods;
     }
+
+
+    const combinedEvents = [...(today || []), ...(distractions || [])].sort((a, b) => {
+        // Extrahiere die Startzeit aus den Zeitbereichen.
+        let startTimeA = a.time.split(' - ')[0];
+        let startTimeB = b.time.split(' - ')[0];
+
+        // Konvertiere die Zeit in eine Zahl für den Vergleich.
+        let secondsA = startTimeA.split(':').reduce((acc, time) => (60 * acc) + +time, 0);
+        let secondsB = startTimeB.split(':').reduce((acc, time) => (60 * acc) + +time, 0);
+
+        // Überprüfe, ob die Startzeiten gleich sind und ob es sich um 'Break' und 'Distractions' handelt
+        if (secondsA === secondsB) {
+            if (a.title === 'Distractions' && b.title === 'Break') {
+                return -1;
+            } else if (b.title === 'Distractions' && a.title === 'Break') {
+                return 1;
+            }
+        }
+
+        return secondsA - secondsB;
+    });
+
+    const eventItems = combinedEvents.map((event, index) => (
+        <div key={index} className="event-item" style={{position: 'relative'}}>
+            <span className="event-dot" style={{backgroundColor: event.color}}></span>
+            <Text strong
+                  style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)'}}>{event.title}</Text>
+            <Text className="event-time"
+                  style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)'}}>{event.time}</Text>
+        </div>
+    ));
 
 
     return (
@@ -198,16 +255,7 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
                             letterSpacing: '.1rem'
                         }}>TODAY</Paragraph>
                         <div className="custom-events">
-                            {today && today.map((event, index) => (
-                                <div key={index} className="event-item" style={{position: 'relative'}}>
-                                    {/* Farbe wird nun über CSS gesetzt */}
-                                    <span className="event-dot" style={{backgroundColor: event.color}}></span>
-                                    <Text strong
-                                          style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',}}>{event.title}</Text>
-                                    <Text className="event-time"
-                                          style={{color: theme === 'dark' ? 'white' : 'rgba(0, 0, 0, 0.85)',}}>{event.time}</Text>
-                                </div>
-                            ))}
+                            {eventItems}
                         </div>
                     </div>
 
@@ -217,7 +265,7 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
                     position: 'absolute',
                     bottom: '0px',
                     left: '16px'
-                }}>© 2023 TaskVue</Paragraph>
+                }}>© 2024 TaskVue</Paragraph>
             </Sider>
 
         </Layout>

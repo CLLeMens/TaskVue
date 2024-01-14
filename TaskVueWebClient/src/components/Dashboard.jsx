@@ -8,8 +8,6 @@ import {
 import 'dayjs/locale/de';
 import History from "./History.jsx";
 import Productivity from "./Productivity.jsx";
-
-import locale from "antd/es/locale/en_GB";
 import dayjs from 'dayjs';
 import updateLocale from 'dayjs/plugin/updateLocale';
 import Home from "./Home.jsx";
@@ -38,7 +36,6 @@ const Dashboard = () => {
 
     const headerItems = [
         {key: 'home', icon: <HomeOutlined/>, label: 'Home'},
-        {key: 'history', icon: <HistoryOutlined/>, label: 'History'},
         {key: 'productivity', icon: <RiseOutlined/>, label: 'Productivity'},
     ];
 

@@ -653,7 +653,6 @@ const Home = () => {
           </div>
         </div>
       </div>
-      // Render a modal with the work overview
       <Modal title="Work overview" open={isModalVisible} onOk={handleOk}>
         <p style={{ fontSize: "1rem" }}>
           Actual Workload: {formatTime(workedTime)}

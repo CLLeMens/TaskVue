@@ -370,7 +370,6 @@ const Goals = () => {
           pagination={false} // Disable pagination
         />
       </ConfigProvider>
-      // Button component to save changes
       <Button
         onClick={saveGoals} // Function to save goals
         type={"primary"} // Button type

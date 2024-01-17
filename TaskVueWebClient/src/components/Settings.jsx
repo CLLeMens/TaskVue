@@ -203,7 +203,7 @@ const Settings = () => {
         transition: "background-color 0.4s ease, color 0.4s ease",
       }}
     >
-      // Use the Menu component for the header
+
       <Menu
         mode="horizontal"
         defaultSelectedKeys={["settings"]}
@@ -223,7 +223,7 @@ const Settings = () => {
           color: theme === "dark" ? "#ffffff" : "black",
         }}
       />
-      // Container for the settings
+
       <div
         className={"settings-wrapper"}
         style={{
@@ -234,11 +234,11 @@ const Settings = () => {
           margin: " 45px 0 0 65px",
         }}
       >
-        // Title for the general settings
+
         <Title level={4} style={getTextStyle()}>
           General
         </Title>
-        // Container for the general settings
+
         <div
           className={"general-wrapper"}
           style={{
@@ -250,7 +250,7 @@ const Settings = () => {
             minWidth: "100%",
           }}
         >
-          // Container for the labels of the general settings
+
           <div
             style={{ display: "flex", flexDirection: "column", gap: "30px" }}
           >
@@ -277,7 +277,7 @@ const Settings = () => {
               checked={editedData.isNotificationsOn}
               onChange={(e) => handleInputChange("isNotificationsOn", e)}
             />
-            // Select-button for theme
+
             <Select
               style={{ width: "100px", marginLeft: "auto" }}
               onChange={(e) => handleInputChange("appTheme", e)}
@@ -293,7 +293,7 @@ const Settings = () => {
         <Title level={4} style={getTextStyle()}>
           Tracking
         </Title>
-        // Container for the tracking settings
+
         <div
           className={"tracking-wrapper"}
           style={{
@@ -307,7 +307,7 @@ const Settings = () => {
             marginBottom: "40px",
           }}
         >
-          // Container for the labels of the tracking settings
+
           <div
             style={{
               // Arrange the labels in a column with a gap between them
@@ -316,14 +316,14 @@ const Settings = () => {
               gap: "30px",
             }}
           >
-            // Labels for the tracking settings
+
             <div>Track drowziness</div>
             <div>Track other people</div>
             <div>Track Smartphone</div>
             <div>Track Distraction</div>
             <div>Tracking grade</div>
           </div>
-          // Container for the switches of the tracking settings
+
           <div
             style={{
               display: "flex",
@@ -333,7 +333,7 @@ const Settings = () => {
               marginRight: "45px",
             }}
           >
-            // Switch for enabling or disabling drowziness tracking
+
             <Switch
               // The current value is the drowziness tracking setting from the edited data
               checked={editedData.isTrackFatigueOn}
@@ -342,7 +342,7 @@ const Settings = () => {
               // Set a width for the switch and align it to the right
               style={{ width: "45px", marginLeft: "auto" }}
             />
-            // Switch for enabling or disabling other people tracking
+
             <Switch
               // The current value is the other people tracking setting from the edited data
               checked={editedData.isTrackOtherPeopleOn}
@@ -351,7 +351,7 @@ const Settings = () => {
               // Set a width for the switch and align it to the right
               style={{ width: "45px", marginLeft: "auto" }}
             />
-            // Switch for enabling or disabling smartphone tracking
+
             <Switch
               // The current value is the smartphone tracking setting from the edited data
               checked={editedData.isTrackSmartphoneOn}
@@ -360,7 +360,7 @@ const Settings = () => {
               // Set a width for the switch and align it to the right
               style={{ width: "45px", marginLeft: "auto" }}
             />
-            // Switch for enabling or disabling distraction tracking
+
             <Switch
               // The current value is the distraction tracking setting from the edited data
               checked={editedData.isDistracted}
@@ -369,7 +369,7 @@ const Settings = () => {
               // Set a width for the switch and align it to the right
               style={{ width: "45px", marginLeft: "auto" }}
             />
-            // Container for the tracking grade slider and label
+           
             <div
               style={{
                 // Arrange the slider and label in a column

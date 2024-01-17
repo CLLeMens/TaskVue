@@ -269,21 +269,19 @@ const SideBar = ({ onMenuSelect, selectedItem }) => {
   const eventItems = combinedEvents.map((event, index) => (
     // Create a div for each event
     <div key={index} className="event-item" style={{ position: "relative" }}>
-      // Create a span for the event dot, with the color based on the event type
+
       <span
         className="event-dot"
         style={{ backgroundColor: event.color }}
       ></span>
-      // Create a Text component for the event title, with the color based on
-      the theme
+
       <Text
         strong
         style={{ color: theme === "dark" ? "white" : "rgba(0, 0, 0, 0.85)" }}
       >
         {event.title}
       </Text>
-      // Create a Text component for the event time, with the color based on the
-      theme
+
       <Text
         className="event-time"
         style={{ color: theme === "dark" ? "white" : "rgba(0, 0, 0, 0.85)" }}
@@ -296,7 +294,7 @@ const SideBar = ({ onMenuSelect, selectedItem }) => {
   // Return the layout for the sidebar
   return (
     <Layout>
-      // Create a Sider component for the sidebar
+
       <Sider
         width={300}
         style={{
@@ -310,27 +308,26 @@ const SideBar = ({ onMenuSelect, selectedItem }) => {
           transition: "background-color 0.4s ease, color 0.4s ease",
         }}
       >
-        // Create a Space component for the sidebar content
+
         <Space direction="vertical" size={50} style={{ width: "100%" }}>
-          // Create a div for the user avatar and name
+
           <div
             style={{ display: "flex", alignItems: "center", margin: "16px" }}
           >
-            // Create an Avatar component for the user avatar
+
             <Avatar size="large" icon={<UserOutlined />} />
-            // Create a span for the user name, with the color based on the
-            theme
+
             <span
               style={{
                 marginLeft: "10px",
                 color: theme === "dark" ? "white" : "rgba(0, 0, 0, 0.85)",
               }}
             >
-              // Get the user name from local storage
+
               {JSON.parse(localStorage.getItem("userName"))}
             </span>
           </div>
-          // Create a Menu component for the sidebar menu
+
           <Menu
             // Handle menu item selection
             onClick={(item) => onMenuSelect(item.key)}
@@ -358,10 +355,9 @@ const SideBar = ({ onMenuSelect, selectedItem }) => {
               },
             }))}
           />
-          // Create a div for the events
+
           <div>
-            // Create a Paragraph component for the "TODAY" heading, with the
-            color based on the theme
+
             <Paragraph
               style={{
                 color: theme === "dark" ? "white" : "rgba(0, 0, 0, 0.85)",
@@ -373,12 +369,11 @@ const SideBar = ({ onMenuSelect, selectedItem }) => {
             >
               TODAY
             </Paragraph>
-            // Create a div for the event items
+
             <div className="custom-events">{eventItems}</div>
           </div>
         </Space>
-        // Create a Paragraph component for the copyright notice, with the color
-        based on the theme
+
         <Paragraph
           style={{
             color: theme === "dark" ? "white" : "rgba(0, 0, 0, 0.85)",

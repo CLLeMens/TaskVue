@@ -32,7 +32,7 @@ function createWindow() {
     // Load the app using a local URL
     win.loadURL('http://localhost:3000');
     // Opens the DevTools for debugging
-    //win.webContents.openDevTools();
+    win.webContents.openDevTools();
 
     const logo = nativeImage.createFromPath(iconPath);
     // Falls auf macOS, setzen Sie das Dock-Icon

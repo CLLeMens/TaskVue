@@ -146,6 +146,9 @@ const SideBar = ({onMenuSelect, selectedItem}) => {
         let periods = [];
         let lastTime = null;
         let lastProcess = null;
+        if (!data) {
+            return periods;
+        }
         if (data.length % 2 !== 0) {
             data.pop();
         }

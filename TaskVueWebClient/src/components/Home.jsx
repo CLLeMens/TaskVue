@@ -317,6 +317,10 @@ const Home = () => {
     }
 
     function calculateTotalHours(events) {
+        // Return 0 if events is null
+        if (!events) {
+            return 0;
+        }
         let totalSeconds = 0;
 
         events.forEach(event => {

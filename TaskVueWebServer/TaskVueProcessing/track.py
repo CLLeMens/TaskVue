@@ -9,8 +9,7 @@ import dlib
 import os
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-
-# from TaskVueWebServer.TaskVueProcessing.json_helper import JsonFileWriter
+from TaskVueWebAPI.models import UserSettings
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -97,9 +96,22 @@ class StateTimer:
 
     # todo: create file if not present
     def update_cumulative(self, current_time):
+
+        user_settings = UserSettings.objects.first()
+        if user_settings:
+            tracking_grade = user_settings.tracking_grade
+        else:
+            tracking_grade = 0.7
+
+        # calculate warning time based on tracking grade
+        max_time = 60
+        min_time = 10
+
+        warning_time = max_time - (tracking_grade * (max_time - min_time))
+
         if self.start_time:
             self.consecutive_time = current_time - self.start_time
-            if self.consecutive_time.total_seconds() > 10:
+            if self.consecutive_time.total_seconds() > warning_time:
                 self.has_exceeded_threshold = True
 
             if self.has_exceeded_threshold:
@@ -158,6 +170,18 @@ class ObjectDetector:
                 'no_persons': StateTimer()
             }
 
+        user_settings = UserSettings.objects.first()
+        if user_settings:
+            tracking_grade = user_settings.tracking_grade
+        else:
+            tracking_grade = 0.7
+
+        # calculate warning time based on tracking grade
+        max_time = 60
+        min_time = 10
+
+        self.warning_time = max_time - (tracking_grade * (max_time - min_time))
+
     def update_timers(self, current_states, current_time):
         for state, timer in self.timers.items():
             if state in current_states:
@@ -168,8 +192,9 @@ class ObjectDetector:
 
     def check_timers(self):
         channel_layer = get_channel_layer()
+
         for state, timer in self.timers.items():
-            if timer.get_consecutive_time() > 10:
+            if timer.get_consecutive_time() > self.warning_time:
                 if timer.local_start_time is None:
                     timer.setLocalStartTime(datetime.datetime.now())
                 message = f"{state}"

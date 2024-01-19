@@ -48,9 +48,19 @@ function createWindow() {
         // Senden einer Nachricht an den Server
         ws.send(JSON.stringify({message: "Hello from the client!"}));
     };
+    let lastMessageTime = null;
 
     ws.onmessage = function (event) {
-        // Empfangen einer Nachricht vom Server
+        const currentTime = new Date().getTime();
+
+        //Check if last message was sent less than 10 seconds ago
+        if (lastMessageTime && currentTime - lastMessageTime < 10000) {
+            return;
+        }
+        // update last message time
+        lastMessageTime = currentTime;
+
+        // Get the data from the message
         const data = JSON.parse(event.data);
         let body;
         switch (data.message) {

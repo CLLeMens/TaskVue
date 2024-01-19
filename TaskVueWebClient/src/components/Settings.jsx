@@ -174,7 +174,7 @@ const Settings = () => {
 
   // Function to get the text style based on the current theme
   const getTextStyle = () => ({
-    color: theme === "dark" ? "#ffffff" : null,
+    color: theme === "dark" ? "#ffffff" : 'black',
     marginBottom: "30px",
   });
 
@@ -369,7 +369,7 @@ const Settings = () => {
               // Set a width for the switch and align it to the right
               style={{ width: "45px", marginLeft: "auto" }}
             />
-           
+
             <div
               style={{
                 // Arrange the slider and label in a column

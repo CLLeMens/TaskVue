@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Menu, DatePicker, ConfigProvider } from "antd";
-import { HistoryOutlined, RiseOutlined, HomeOutlined } from "@ant-design/icons";
+import { RiseOutlined, HomeOutlined } from "@ant-design/icons";
 import "dayjs/locale/de";
-import History from "./History.jsx";
 import Productivity from "./Productivity.jsx";
 import dayjs from "dayjs";
 import updateLocale from "dayjs/plugin/updateLocale";
@@ -44,9 +43,6 @@ const Dashboard = () => {
   switch (selectedHeaderItem) {
     case "home":
       content = <Home />;
-      break;
-    case "history":
-      content = <History week={currentWeek} />;
       break;
     case "productivity":
       content = <Productivity week={currentWeek} />;

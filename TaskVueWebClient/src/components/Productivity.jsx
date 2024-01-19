@@ -7,6 +7,24 @@ import locale from "antd/es/locale/de_DE";
 import {useTheme} from "../context/ThemeContext.jsx";
 import {makeRequest} from "../api/api.js";
 import {MONTHSCORES, PROCESSFLOW_WEEK, TRACKWEEK} from "../api/endpoints.js";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title as TitleJS,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  TitleJS,
+  Tooltip,
+  Legend
+);
 
 const {Title} = Typography;
 
@@ -29,7 +47,7 @@ const Productivity = ({week}) => {
             try {
                 // Format the week number
                 const year = currentDate.year();
-                const weekNumber = currentDate.week() - 1;
+                const weekNumber = currentDate.week();
                 const formattedWeek = `${year}-${weekNumber
                     .toString()
                     .padStart(2, "0")}`;
@@ -55,16 +73,16 @@ const Productivity = ({week}) => {
             try {
                 // Format the week number
                 const year = currentDate.year();
-                const weekNumber = currentDate.week() - 1;
+                const weekNumber = currentDate.week();
                 const formattedWeek = `${year}-${weekNumber
                     .toString()
                     .padStart(2, "0")}`;
-
                 // Make request to get week distractions
                 const response = await makeRequest("GET", TRACKWEEK, {
                     date: formattedWeek,
                 });
                 setWeekDistractions(response);
+
             } catch (e) {
                 console.log(e);
             }
@@ -98,6 +116,7 @@ const Productivity = ({week}) => {
 
     // Function to handle week change
     const handleWeekChange = async (date) => {
+        console.log('test')
         // If a date is provided
         if (date) {
             // Extract the year and week number from the date

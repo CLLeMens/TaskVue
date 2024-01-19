@@ -204,10 +204,10 @@ class TrackWeekView(APIView):
         year_week = request.GET.get('date', '')
         # Split the year and week from the date
         year, week = map(int, year_week.split('-'))
-
+        print(year, week)
         # Get the date for the Monday of the specified week
         monday = Week(year, week).monday()
-
+        print(monday)
         # Initialize an empty list for the tracking data
         track_data_list = []
 
@@ -282,9 +282,6 @@ class UserSettingsView(APIView):
         track_smartphone = request.data.get('isTrackSmartphoneOn')
         track_distractions = request.data.get('isDistracted')
         tracking_grade = request.data.get('trackingGrade')
-
-        # Print the track_distractions value for debugging
-        print("TRACKKKKKK: ", track_distractions)
 
         try:
             # Try to get the user settings from the database
@@ -573,9 +570,6 @@ class TrackJSONView(APIView):
 
 def calculate_performance_score(actual_work, target_work, actual_break, target_break, actual_distraction,
                                 max_distraction, weight_work=0.5, weight_break=0.2, weight_distraction=0.3):
-
-    # Print the input values for debugging purposes
-    print(actual_work, target_work, actual_break, target_break, actual_distraction, max_distraction)
 
     # If any of the target values are None, set them to 0
     if target_work is None:

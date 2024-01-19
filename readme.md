@@ -25,7 +25,7 @@ To install and set up TaskVue, follow these steps:
 5. Install the frontend dependencies: `npm install`
 6. Start the backend server with Daphne:
     - Navigate to the backend directory: `cd TaskVueWebServer`
-    - Run Daphne: `daphne your_project.asgi:application`
+    - Run Daphne: `daphne -p 8000 TaskVueWebServer.asgi:application`
 7. Start the frontend development server:
     - Navigate to the frontend directory: `cd TaskVueWebClient`
     - Run the development server: `npm start-dev`

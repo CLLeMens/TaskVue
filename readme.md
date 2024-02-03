@@ -49,3 +49,4 @@ To use TaskVue, follow these steps:
 
 - "My program takes a long while to send notifications" -> Set the tracking grade higher in the settings, it changes the notification threshold.
 
+- "It takes a long time until the first countdown begins" -> The Object Detection Model is most likely being downloaded in the background, once downloaded the startup should be way quicker
